@@ -1,0 +1,1738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard - ANHONI Disaster Management</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    /* Admin Dashboard Layout */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8f9fa;
+    }
+
+    /* Header Styles */
+    .admin-header {
+      background: linear-gradient(135deg, #dc3545, #c82333);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
+
+    .admin-header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+
+    .admin-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      position: relative;
+    }
+
+    .admin-username {
+      cursor: pointer;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .admin-username:hover {
+      background-color: rgba(255,255,255,0.1);
+    }
+
+    /* Dropdown Menu */
+    .admin-dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: white;
+      color: #333;
+      border-radius: 5px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      padding: 0.5rem;
+      min-width: 150px;
+      z-index: 1001;
+    }
+
+    .admin-dropdown.show {
+      display: block;
+    }
+
+    .admin-dropdown button {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 3px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .admin-dropdown button:hover {
+      background: #c82333;
+    }
+
+    /* Main Container */
+    .admin-container {
+      display: flex;
+      margin-top: 70px;
+      min-height: calc(100vh - 70px);
+    }
+
+    /* Sidebar Styles */
+    .admin-sidebar {
+      width: 280px;
+      background: white;
+      box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+      padding: 2rem 0;
+    }
+
+    .admin-sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .admin-sidebar li {
+      border-bottom: 1px solid #eee;
+    }
+
+    .admin-sidebar a {
+      display: block;
+      padding: 1rem 2rem;
+      color: #333;
+      text-decoration: none;
+      transition: background-color 0.3s;
+      font-weight: 500;
+    }
+
+    .admin-sidebar a:hover {
+      background-color: #f8f9fa;
+    }
+
+    .admin-sidebar a.active {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .admin-sidebar i {
+      margin-right: 10px;
+      width: 20px;
+    }
+
+    /* Content Area */
+    .admin-content {
+      flex: 1;
+      padding: 2rem;
+    }
+
+    .content-section {
+      display: none;
+      background: white;
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .content-section.active {
+      display: block;
+    }
+
+    /* Statistics Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      text-align: center;
+      border-left: 4px solid #dc3545;
+    }
+
+    .stat-card.incidents {
+      border-left-color: #dc3545;
+    }
+
+    .stat-card.sos {
+      border-left-color: #ffc107;
+    }
+
+    .stat-card.shelters {
+      border-left-color: #28a745;
+    }
+
+    .stat-card.relief {
+      border-left-color: #007bff;
+    }
+
+    .stat-card h3 {
+      margin: 0 0 0.5rem 0;
+      color: #666;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .stat-card .stat-number {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #dc3545;
+      margin: 0;
+    }
+
+    .stat-card.incidents .stat-number {
+      color: #dc3545;
+    }
+
+    .stat-card.sos .stat-number {
+      color: #ffc107;
+    }
+
+    .stat-card.shelters .stat-number {
+      color: #28a745;
+    }
+
+    .stat-card.relief .stat-number {
+      color: #007bff;
+    }
+
+    /* Button Styles */
+    .btn-admin {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-admin:hover {
+      background: #c82333;
+    }
+
+    .btn-admin.secondary {
+      background: #6c757d;
+    }
+
+    .btn-admin.secondary:hover {
+      background: #5a6268;
+    }
+
+    .btn-admin.success {
+      background: #28a745;
+    }
+
+    .btn-admin.success:hover {
+      background: #218838;
+    }
+
+    .btn-admin.warning {
+      background: #ffc107;
+      color: #212529;
+    }
+
+    .btn-admin.warning:hover {
+      background: #e0a800;
+    }
+
+    /* Table Styles */
+    .admin-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .admin-table th,
+    .admin-table td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    .admin-table th {
+      background: #f8f9fa;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .admin-table tr:hover {
+      background: #f8f9fa;
+    }
+
+    .admin-table .actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .admin-table .btn-sm {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .status-badge {
+      padding: 0.25rem 0.5rem;
+      border-radius: 3px;
+      font-size: 0.875rem;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .status-badge.reported {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status-badge.verified {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status-badge.resolved {
+      background: #cce7ff;
+      color: #004085;
+    }
+
+    .status-badge.new {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .status-badge.acknowledged {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status-badge.handled {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    /* Form Styles */
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: #dc3545;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(220,53,69,0.25);
+    }
+
+    /* Message Styles */
+    .message {
+      padding: 1rem;
+      border-radius: 5px;
+      margin: 1rem 0;
+    }
+
+    .message.success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .message.error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .admin-sidebar {
+        width: 100%;
+        order: 2;
+      }
+      
+      .admin-container {
+        flex-direction: column;
+      }
+      
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Enhanced SOS Management Styles */
+    .btn-sm {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.875rem;
+      border-radius: 3px;
+    }
+
+    .btn-sm:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Search and Filter Styling */
+    .search-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .search-container input {
+      transition: all 0.2s ease;
+    }
+
+    .search-container input:focus {
+      border-color: #dc3545;
+      box-shadow: 0 0 0 2px rgba(220,53,69,0.25);
+    }
+
+    /* Table enhancements */
+    .admin-table td {
+      vertical-align: top;
+    }
+
+    .admin-table .actions {
+      white-space: nowrap;
+    }
+
+    /* Pagination styling */
+    #sosPagination, #incidentPagination {
+      background: white;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    #sosPagination .btn-admin, #incidentPagination .btn-admin {
+      min-width: 40px;
+    }
+
+    /* Status badge improvements */
+    .status-badge {
+      white-space: nowrap;
+    }
+
+    /* Coordinate Validation Styles */
+    .validation-message {
+      font-size: 0.8rem;
+      margin-top: 0.25rem;
+      opacity: 0;
+      transition: all 0.2s ease;
+      min-height: 1rem;
+    }
+
+    .validation-message.show {
+      opacity: 1;
+    }
+
+    .validation-message.error {
+      color: #c53030;
+    }
+
+    .validation-message.success {
+      color: #2f855a;
+    }
+
+    .form-group input.invalid {
+      border-color: #c53030;
+      box-shadow: 0 0 0 2px rgba(197, 48, 48, 0.25);
+    }
+
+    .form-group input.valid {
+      border-color: #2f855a;
+      box-shadow: 0 0 0 2px rgba(47, 133, 90, 0.25);
+    }
+  </style>
+</head>
+<body>
+<body>
+  <!-- Role-based access control: Only "admin" role can access this page -->
+  <script src="js/access-control.js"></script>
+  <script>
+    // Initialize access control for admin dashboard
+    if (!ACCESS_CONTROL.initPageAccess("admin", "admin_dashboard.html")) {
+      // Access denied - user will be redirected by access control module
+      throw new Error("Access denied to admin dashboard");
+    }
+    
+    // Get current user info
+    const currentUser = ACCESS_CONTROL.getCurrentUser();
+    console.log(`[ADMIN_DASHBOARD] Admin ${currentUser.id} accessed admin dashboard`);
+  </script>
+
+  <!-- Header -->
+  <header class="admin-header">
+    <h1><i class="fas fa-shield-alt"></i> ANHONI - Admin Dashboard</h1>
+    <div class="admin-info">
+      <span class="admin-username" id="adminUsernameDisplay" onclick="toggleAdminDropdown()">
+        <i class="fas fa-user-shield"></i>
+        <span id="adminNameText">Loading...</span>
+        <i class="fas fa-chevron-down"></i>
+      </span>
+      <div class="admin-dropdown" id="adminDropdown">
+        <button onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Dashboard Container -->
+  <div class="admin-container">
+    <!-- Sidebar -->
+    <nav class="admin-sidebar">
+      <ul>
+        <li>
+          <a href="#dashboard" class="nav-link active" onclick="showSection('dashboard')">
+            <i class="fas fa-chart-line"></i> Dashboard Overview
+          </a>
+        </li>
+        <li>
+          <a href="#incidents" class="nav-link" onclick="showSection('incidents')">
+            <i class="fas fa-exclamation-triangle"></i> Manage Incidents
+          </a>
+        </li>
+        <li>
+          <a href="#sos-management" class="nav-link" onclick="showSection('sos-management')">
+            <i class="fas fa-phone"></i> SOS Management
+          </a>
+        </li>
+        <li>
+          <a href="#shelters" class="nav-link" onclick="showSection('shelters')">
+            <i class="fas fa-home"></i> Shelter Management
+          </a>
+        </li>
+        <li>
+          <a href="#relief" class="nav-link" onclick="showSection('relief')">
+            <i class="fas fa-hands-helping"></i> Relief Operations
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Content Area -->
+    <main class="admin-content">
+      <!-- Dashboard Overview Section -->
+      <section id="dashboard" class="content-section active">
+        <h2><i class="fas fa-chart-line"></i> Dashboard Overview</h2>
+        
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+          <div class="stat-card incidents">
+            <h3>Total Incidents</h3>
+            <p class="stat-number" id="totalIncidents">0</p>
+          </div>
+          <div class="stat-card sos">
+            <h3>Active SOS Requests</h3>
+            <p class="stat-number" id="activeSOS">0</p>
+          </div>
+          <div class="stat-card shelters">
+            <h3>Available Shelters</h3>
+            <p class="stat-number" id="totalShelters">0</p>
+          </div>
+          <div class="stat-card relief">
+            <h3>Relief Operations</h3>
+            <p class="stat-number" id="totalRelief">0</p>
+          </div>
+        </div>
+
+        <!-- Quick Summary -->
+        <div style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <h3><i class="fas fa-info-circle"></i> Admin Command Center</h3>
+          <p>Welcome to the ANHONI Disaster Management Admin Dashboard. Use the sidebar to:</p>
+          <ul>
+            <li><strong>Manage Incidents:</strong> Review, verify, and resolve reported incidents</li>
+            <li><strong>SOS Management:</strong> Monitor and respond to emergency SOS requests</li>
+            <li><strong>Shelter Management:</strong> Add and manage emergency shelters</li>
+            <li><strong>Relief Operations:</strong> Coordinate relief efforts and updates</li>
+          </ul>
+          <p>Real-time statistics are displayed above to help you monitor the current situation.</p>
+        </div>
+      </section>
+
+      <!-- Manage Incidents Section -->
+      <section id="incidents" class="content-section">
+        <h2><i class="fas fa-exclamation-triangle"></i> Manage Incidents</h2>
+        
+        <!-- Search and Controls -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
+            <div style="position: relative; flex: 1; max-width: 400px;">
+              <input type="text" id="incidentSearchInput" placeholder="Search incidents..." 
+                     style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;">
+              <i class="fas fa-search" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #666;"></i>
+            </div>
+            <select id="incidentStatusFilter" style="padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; margin-left:60px;">
+              <option value="">All Status</option>
+              <option value="reported">Reported</option>
+              <option value="verified">Verified</option>
+              <option value="resolved">Resolved</option>
+            </select>
+          </div>
+          <button class="btn-admin" onclick="loadIncidents()">
+            <i class="fas fa-sync-alt"></i> Refresh Incidents
+          </button>
+        </div>
+        
+        <table class="admin-table" id="incidentTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Title</th>
+              <th>Description</th>
+              <th>Username</th>
+              <th>Location</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        
+        <!-- Pagination Controls -->
+        <div id="incidentPagination" style="display: flex; justify-content: center; align-items: center; margin-top: 1.5rem; gap: 0.5rem;">
+          <button class="btn-admin btn-sm" id="incidentFirstPage" onclick="goToIncidentPage(1)">
+            <i class="fas fa-angle-double-left"></i>
+          </button>
+          <button class="btn-admin btn-sm" id="incidentPrevPage" onclick="previousIncidentPage()">
+            <i class="fas fa-angle-left"></i>
+          </button>
+          <span id="incidentPageInfo" style="margin: 0 1rem; font-weight: bold;">Page 1 of 1</span>
+          <button class="btn-admin btn-sm" id="incidentNextPage" onclick="nextIncidentPage()">
+            <i class="fas fa-angle-right"></i>
+          </button>
+          <button class="btn-admin btn-sm" id="incidentLastPage" onclick="goToIncidentPage('last')">
+            <i class="fas fa-angle-double-right"></i>
+          </button>
+          <select id="incidentItemsPerPage" onchange="changeIncidentItemsPerPage()" style="margin-left: 1rem; padding: 0.25rem; border: 1px solid #ddd; border-radius: 3px;">
+            <option value="10">10 per page</option>
+            <option value="25">25 per page</option>
+            <option value="50">50 per page</option>
+            <option value="100">100 per page</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- SOS Management Section -->
+      <section id="sos-management" class="content-section">
+        <h2><i class="fas fa-phone"></i> SOS Management</h2>
+        
+        <!-- Search and Controls -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; gap: 1rem; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
+            <div style="position: relative; flex: 1; max-width: 400px;">
+              <input type="text" id="sosSearchInput" placeholder="Search SOS entries..." 
+                     style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem;">
+              <i class="fas fa-search" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: #666;"></i>
+            </div>
+            <select id="sosStatusFilter" style="padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; margin-left: 60px;">
+              <option value="">All Status</option>
+              <option value="new">New</option>
+              <option value="acknowledged">Acknowledged</option>
+              <option value="handled">Handled</option>
+            </select>
+          </div>
+          <button class="btn-admin" onclick="loadSOS()">
+            <i class="fas fa-sync-alt"></i> Refresh SOS Requests
+          </button>
+        </div>
+        
+        <table class="admin-table" id="sosTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Username</th>
+              <th>Message</th>
+              <th>Location</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        
+        <!-- Pagination Controls -->
+        <div id="sosPagination" style="display: flex; justify-content: center; align-items: center; margin-top: 1.5rem; gap: 0.5rem;">
+          <button class="btn-admin btn-sm" id="sosFirstPage" onclick="goToSOSPage(1)">
+            <i class="fas fa-angle-double-left"></i>
+          </button>
+          <button class="btn-admin btn-sm" id="sosPrevPage" onclick="previousSOSPage()">
+            <i class="fas fa-angle-left"></i>
+          </button>
+          <span id="sosPageInfo" style="margin: 0 1rem; font-weight: bold;">Page 1 of 1</span>
+          <button class="btn-admin btn-sm" id="sosNextPage" onclick="nextSOSPage()">
+            <i class="fas fa-angle-right"></i>
+          </button>
+          <button class="btn-admin btn-sm" id="sosLastPage" onclick="goToSOSPage('last')">
+            <i class="fas fa-angle-double-right"></i>
+          </button>
+          <select id="sosItemsPerPage" onchange="changeSOSItemsPerPage()" style="margin-left: 1rem; padding: 0.25rem; border: 1px solid #ddd; border-radius: 3px;">
+            <option value="10">10 per page</option>
+            <option value="25">25 per page</option>
+            <option value="50">50 per page</option>
+            <option value="100">100 per page</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- Shelter Management Section -->
+      <section id="shelters" class="content-section">
+        <h2><i class="fas fa-home"></i> Shelter Management</h2>
+        
+        <!-- Add Shelter Form -->
+        <div style="background: #f8f9fa; padding: 2rem; border-radius: 8px; margin-bottom: 2rem;">
+          <h3><i class="fas fa-plus"></i> Add New Shelter</h3>
+          <form id="shelterForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="shelterName">Shelter Name *</label>
+                <input type="text" id="shelterName" required placeholder="Emergency Shelter Name">
+              </div>
+              <div class="form-group">
+                <label for="shelterContact">Contact Information *</label>
+                <input type="text" id="shelterContact" required placeholder="Phone/Email">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="shelterLat">Latitude *</label>
+                <input type="number" step="any" id="shelterLat" required placeholder="e.g., 28.6139" min="-90" max="90">
+                <div class="validation-message" id="shelterLatError"></div>
+              </div>
+              <div class="form-group">
+                <label for="shelterLng">Longitude *</label>
+                <input type="number" step="any" id="shelterLng" required placeholder="e.g., 77.2090" min="-180" max="180">
+                <div class="validation-message" id="shelterLngError"></div>
+              </div>
+              <div class="form-group">
+                <label for="shelterCap">Capacity *</label>
+                <input type="number" id="shelterCap" required placeholder="Number of people">
+              </div>
+            </div>
+            <button type="submit" class="btn-admin">
+              <i class="fas fa-plus"></i> Add Shelter
+            </button>
+          </form>
+          <div id="shelterMessage"></div>
+        </div>
+      </section>
+
+      <!-- Relief Operations Section -->
+      <section id="relief" class="content-section">
+        <h2><i class="fas fa-hands-helping"></i> Relief Operations</h2>
+        
+        <!-- Post Relief Update Form -->
+        <div style="background: #f8f9fa; padding: 2rem; border-radius: 8px; margin-bottom: 2rem;">
+          <h3><i class="fas fa-bullhorn"></i> Post Relief Update</h3>
+          <form id="reliefForm">
+            <div class="form-group">
+              <label for="reliefTitle">Relief Title *</label>
+              <input type="text" id="reliefTitle" required placeholder="Relief operation title">
+            </div>
+            <div class="form-group">
+              <label for="reliefDesc">Description *</label>
+              <textarea id="reliefDesc" required rows="4" placeholder="Detailed description of relief operation"></textarea>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="reliefLat">Latitude *</label>
+                <input type="number" step="any" id="reliefLat" required placeholder="e.g., 28.6139" min="-90" max="90">
+                <div class="validation-message" id="reliefLatError"></div>
+              </div>
+              <div class="form-group">
+                <label for="reliefLng">Longitude *</label>
+                <input type="number" step="any" id="reliefLng" required placeholder="e.g., 77.2090" min="-180" max="180">
+                <div class="validation-message" id="reliefLngError"></div>
+              </div>
+            </div>
+            <button type="submit" class="btn-admin">
+              <i class="fas fa-paper-plane"></i> Post Relief Update
+            </button>
+          </form>
+          <div id="reliefMessage"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+
+  <script>
+    // Use current user from access control
+    const admin_id = currentUser.id;
+    
+    // Dashboard state
+    let dashboardStats = {
+      incidents: 0,
+      sos: 0,
+      shelters: 0,
+      relief: 0
+    };
+
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', function() {
+      loadAdminInfo();
+      loadDashboardStats();
+      loadIncidents();
+      loadSOS();
+      
+      // Setup SOS search and filter
+      const sosSearchInput = document.getElementById('sosSearchInput');
+      const sosStatusFilter = document.getElementById('sosStatusFilter');
+      
+      if (sosSearchInput) {
+        sosSearchInput.addEventListener('input', filterSOSData);
+      }
+      
+      if (sosStatusFilter) {
+        sosStatusFilter.addEventListener('change', filterSOSData);
+      }
+    });
+
+    // Load admin information
+    function loadAdminInfo() {
+      const adminNameElement = document.getElementById('adminNameText');
+      if (adminNameElement) {
+        adminNameElement.textContent = `Admin ${currentUser.id}`;
+      }
+    }
+
+    // Navigation functions
+    function showSection(sectionId) {
+      // Hide all sections
+      const sections = document.querySelectorAll('.content-section');
+      sections.forEach(section => section.classList.remove('active'));
+      
+      // Remove active class from all nav links
+      const navLinks = document.querySelectorAll('.nav-link');
+      navLinks.forEach(link => link.classList.remove('active'));
+      
+      // Show selected section
+      const targetSection = document.getElementById(sectionId);
+      if (targetSection) {
+        targetSection.classList.add('active');
+      }
+      
+      // Add active class to corresponding nav link
+      const activeLink = document.querySelector(`[onclick="showSection('${sectionId}')"]`);
+      if (activeLink) {
+        activeLink.classList.add('active');
+      }
+    }
+
+    // Dropdown functions
+    function toggleAdminDropdown() {
+      const dropdown = document.getElementById('adminDropdown');
+      dropdown.classList.toggle('show');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(event) {
+      const dropdown = document.getElementById('adminDropdown');
+      const username = document.getElementById('adminUsernameDisplay');
+      
+      if (!username.contains(event.target)) {
+        dropdown.classList.remove('show');
+      }
+    });
+
+    // Load dashboard statistics
+    async function loadDashboardStats() {
+      try {
+        // Load all data for statistics
+        const [incidentsRes, sosRes, sheltersRes, reliefRes] = await Promise.all([
+          fetch("http://127.0.0.1:5000/api/incidents"),
+          fetch("http://127.0.0.1:5000/api/sos"),
+          fetch("http://127.0.0.1:5000/api/shelters"),
+          fetch("http://127.0.0.1:5000/api/relief")
+        ]);
+        
+        const incidents = await incidentsRes.json();
+        const sosList = await sosRes.json();
+        const shelters = await sheltersRes.json();
+        const relief = await reliefRes.json();
+        
+        // Update dashboard statistics
+        document.getElementById('totalIncidents').textContent = incidents.length;
+        document.getElementById('activeSOS').textContent = sosList.filter(s => s.status !== 'handled').length;
+        document.getElementById('totalShelters').textContent = shelters.length;
+        document.getElementById('totalRelief').textContent = relief.length;
+        
+      } catch (error) {
+        console.error('Error loading dashboard stats:', error);
+      }
+    }
+
+    // Incident Management State
+    let incidentData = [];
+    let filteredIncidentData = [];
+    let incidentCurrentPage = 1;
+    let incidentItemsPerPage = 10;
+    let incidentUserCache = {}; // Cache for username lookups
+
+    // Load Incidents
+    async function loadIncidents() {
+      try {
+        const response = await fetch("http://127.0.0.1:5000/api/incidents");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        incidentData = await response.json();
+        
+        // Load user data for username mapping
+        await loadIncidentUserData();
+        
+        // Apply current filters
+        filterIncidentData();
+        
+        // Update stats
+        loadDashboardStats();
+      } catch (error) {
+        console.error("Error loading incidents:", error);
+        alert("Failed to load incidents. Please try again.");
+      }
+    }
+
+    // Load user data for incident username mapping
+    async function loadIncidentUserData() {
+      try {
+        // Get unique user IDs from incident data
+        const userIds = [...new Set(incidentData.map(i => i.user_id).filter(id => id))];
+        
+        // Fetch usernames for IDs not in cache
+        const uncachedIds = userIds.filter(id => !incidentUserCache[id]);
+        
+        if (uncachedIds.length > 0) {
+          // Fetch users from the API
+          const response = await fetch("http://127.0.0.1:5000/api/users");
+          if (response.ok) {
+            const users = await response.json();
+            users.forEach(user => {
+              incidentUserCache[user.id] = user.username;
+            });
+          } else {
+            // Fallback: create usernames based on user_id
+            uncachedIds.forEach(id => {
+              incidentUserCache[id] = `User ${id}`;
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error loading incident user data:", error);
+        // Fallback: use user_id as display name
+        incidentData.forEach(i => {
+          if (i.user_id && !incidentUserCache[i.user_id]) {
+            incidentUserCache[i.user_id] = `User ${i.user_id}`;
+          }
+        });
+      }
+    }
+
+    // Filter incident data based on search and status
+    function filterIncidentData() {
+      const searchTerm = document.getElementById('incidentSearchInput').value.toLowerCase();
+      const statusFilter = document.getElementById('incidentStatusFilter').value;
+      
+      filteredIncidentData = incidentData.filter(i => {
+        const username = incidentUserCache[i.user_id] || `User ${i.user_id || 'Unknown'}`;
+        const matchesSearch = !searchTerm || 
+          i.id.toString().includes(searchTerm) ||
+          i.title.toLowerCase().includes(searchTerm) ||
+          (i.description && i.description.toLowerCase().includes(searchTerm)) ||
+          username.toLowerCase().includes(searchTerm) ||
+          i.status.toLowerCase().includes(searchTerm);
+        
+        const matchesStatus = !statusFilter || i.status === statusFilter;
+        
+        return matchesSearch && matchesStatus;
+      });
+      
+      // Reset to first page when filtering
+      incidentCurrentPage = 1;
+      displayIncidentData();
+      updateIncidentPagination();
+    }
+
+    // Display incident data with pagination
+    function displayIncidentData() {
+      const tbody = document.querySelector("#incidentTable tbody");
+      tbody.innerHTML = "";
+      
+      if (filteredIncidentData.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" style="text-align: center; padding: 2rem; color: #666;">
+              <i class="fas fa-inbox"></i><br>
+              No incidents found
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      const startIndex = (incidentCurrentPage - 1) * incidentItemsPerPage;
+      const endIndex = startIndex + incidentItemsPerPage;
+      const pageData = filteredIncidentData.slice(startIndex, endIndex);
+      
+      pageData.forEach(i => {
+        const username = incidentUserCache[i.user_id] || `User ${i.user_id || 'Unknown'}`;
+        const location = i.latitude && i.longitude ? 
+          `${i.latitude.toFixed(4)}, ${i.longitude.toFixed(4)}` : 'Not provided';
+        const createdDate = i.created_at ? 
+          new Date(i.created_at).toLocaleDateString() : 'Unknown';
+        
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${i.id}</td>
+          <td><strong>${i.title}</strong></td>
+          <td style="max-width: 200px; word-wrap: break-word;">${i.description || 'N/A'}</td>
+          <td>
+            <strong>${username}</strong>
+            <br><small style="color: #666;">ID: ${i.user_id || 'Unknown'}</small>
+          </td>
+          <td><small>${location}</small></td>
+          <td><span class="status-badge ${i.status}">${i.status}</span></td>
+          <td><small>${createdDate}</small></td>
+          <td class="actions">
+            ${i.status === 'reported' ? `
+              <button class="btn-admin btn-sm success" onclick="updateIncident(${i.id}, 'verified')">
+                <i class="fas fa-check"></i> Verify
+              </button>
+            ` : ''}
+            ${i.status !== 'resolved' ? `
+              <button class="btn-admin btn-sm" onclick="updateIncident(${i.id}, 'resolved')">
+                <i class="fas fa-flag-checkered"></i> Resolve
+              </button>
+            ` : ''}
+            <button class="btn-admin btn-sm secondary" onclick="viewIncidentDetails(${i.id})">
+              <i class="fas fa-info-circle"></i> Details
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Update incident pagination controls
+    function updateIncidentPagination() {
+      const totalPages = Math.ceil(filteredIncidentData.length / incidentItemsPerPage);
+      const pageInfo = document.getElementById('incidentPageInfo');
+      const firstBtn = document.getElementById('incidentFirstPage');
+      const prevBtn = document.getElementById('incidentPrevPage');
+      const nextBtn = document.getElementById('incidentNextPage');
+      const lastBtn = document.getElementById('incidentLastPage');
+      
+      pageInfo.textContent = `Page ${incidentCurrentPage} of ${totalPages} (${filteredIncidentData.length} total)`;
+      
+      // Update button states
+      firstBtn.disabled = incidentCurrentPage === 1;
+      prevBtn.disabled = incidentCurrentPage === 1;
+      nextBtn.disabled = incidentCurrentPage === totalPages || totalPages === 0;
+      lastBtn.disabled = incidentCurrentPage === totalPages || totalPages === 0;
+      
+      // Update button opacity for disabled state
+      [firstBtn, prevBtn, nextBtn, lastBtn].forEach(btn => {
+        btn.style.opacity = btn.disabled ? '0.5' : '1';
+        btn.style.cursor = btn.disabled ? 'not-allowed' : 'pointer';
+      });
+    }
+
+    // Incident pagination functions
+    function goToIncidentPage(page) {
+      const totalPages = Math.ceil(filteredIncidentData.length / incidentItemsPerPage);
+      if (page === 'last') {
+        incidentCurrentPage = totalPages;
+      } else {
+        incidentCurrentPage = Math.max(1, Math.min(page, totalPages));
+      }
+      displayIncidentData();
+      updateIncidentPagination();
+    }
+
+    function nextIncidentPage() {
+      const totalPages = Math.ceil(filteredIncidentData.length / incidentItemsPerPage);
+      if (incidentCurrentPage < totalPages) {
+        incidentCurrentPage++;
+        displayIncidentData();
+        updateIncidentPagination();
+      }
+    }
+
+    function previousIncidentPage() {
+      if (incidentCurrentPage > 1) {
+        incidentCurrentPage--;
+        displayIncidentData();
+        updateIncidentPagination();
+      }
+    }
+
+    function changeIncidentItemsPerPage() {
+      incidentItemsPerPage = parseInt(document.getElementById('incidentItemsPerPage').value);
+      incidentCurrentPage = 1;
+      displayIncidentData();
+      updateIncidentPagination();
+    }
+
+    // View incident details in a modal/alert
+    function viewIncidentDetails(id) {
+      const incident = incidentData.find(i => i.id === id);
+      if (!incident) return;
+      
+      const username = incidentUserCache[incident.user_id] || `User ${incident.user_id || 'Unknown'}`;
+      const location = incident.latitude && incident.longitude ? 
+        `Latitude: ${incident.latitude}, Longitude: ${incident.longitude}` : 'Location not provided';
+      const created = incident.created_at ? 
+        new Date(incident.created_at).toLocaleString() : 'Unknown';
+      
+      alert(`Incident Details\n\n` +
+            `ID: ${incident.id}\n` +
+            `Title: ${incident.title}\n` +
+            `User: ${username}\n` +
+            `Status: ${incident.status}\n` +
+            `Created: ${created}\n` +
+            `Location: ${location}\n\n` +
+            `Description: ${incident.description || 'No description provided'}`);
+    }
+
+    async function updateIncident(id, status) {
+      try {
+        const response = await fetch(`http://127.0.0.1:5000/api/incidents/${id}`, {
+          method: "PATCH",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({ status })
+        });
+        
+        if (response.ok) {
+          // Update local data
+          const incidentIndex = incidentData.findIndex(i => i.id === id);
+          if (incidentIndex !== -1) {
+            incidentData[incidentIndex].status = status;
+          }
+          
+          // Refilter and display
+          filterIncidentData();
+          
+          // Show success message
+          showTemporaryMessage(`Incident ${id} status updated to ${status}`, 'success');
+        } else {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+      } catch (error) {
+        console.error("Error updating incident:", error);
+        showTemporaryMessage("Failed to update incident. Please try again.", 'error');
+      }
+    }
+
+    // Add Shelter
+    document.getElementById("shelterForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      // Validate coordinates before submission
+      if (!validateAllCoordinates('shelter')) {
+        showTemporaryMessage('Please correct the coordinate errors before submitting.', 'error');
+        return;
+      }
+      
+      const data = {
+        name: document.getElementById("shelterName").value,
+        latitude: parseFloat(document.getElementById("shelterLat").value),
+        longitude: parseFloat(document.getElementById("shelterLng").value),
+        capacity: parseInt(document.getElementById("shelterCap").value),
+        contact: document.getElementById("shelterContact").value
+      };
+
+      try {
+        const response = await fetch("http://127.0.0.1:5000/api/shelters", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify(data)
+        });
+
+        const res = await response.json();
+        const messageElement = document.getElementById("shelterMessage");
+        
+        if (response.ok) {
+          messageElement.innerHTML = '<div class="message success">Shelter added successfully!</div>';
+          document.getElementById("shelterForm").reset();
+          // Clear validation states
+          clearValidationStates('shelter');
+          loadDashboardStats();
+        } else {
+          messageElement.innerHTML = `<div class="message error">${res.message || "Failed to add shelter"}</div>`;
+        }
+      } catch (error) {
+        console.error("Error adding shelter:", error);
+        document.getElementById("shelterMessage").innerHTML = '<div class="message error">Error adding shelter. Please try again.</div>';
+      }
+    });
+
+    // Post Relief
+    document.getElementById("reliefForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      
+      // Validate coordinates before submission
+      if (!validateAllCoordinates('relief')) {
+        showTemporaryMessage('Please correct the coordinate errors before submitting.', 'error');
+        return;
+      }
+      
+      const data = {
+        title: document.getElementById("reliefTitle").value,
+        description: document.getElementById("reliefDesc").value,
+        latitude: parseFloat(document.getElementById("reliefLat").value),
+        longitude: parseFloat(document.getElementById("reliefLng").value),
+        posted_by: admin_id
+      };
+
+      try {
+        const response = await fetch("http://127.0.0.1:5000/api/relief", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify(data)
+        });
+
+        const res = await response.json();
+        const messageElement = document.getElementById("reliefMessage");
+        
+        if (response.ok) {
+          messageElement.innerHTML = '<div class="message success">Relief update posted successfully!</div>';
+          document.getElementById("reliefForm").reset();
+          // Clear validation states
+          clearValidationStates('relief');
+          loadDashboardStats();
+        } else {
+          messageElement.innerHTML = `<div class="message error">${res.message || "Failed to post relief update"}</div>`;
+        }
+      } catch (error) {
+        console.error("Error posting relief:", error);
+        document.getElementById("reliefMessage").innerHTML = '<div class="message error">Error posting relief. Please try again.</div>';
+      }
+    });
+
+    // SOS Management State
+    let sosData = [];
+    let filteredSOSData = [];
+    let sosCurrentPage = 1;
+    let sosItemsPerPage = 10;
+    let sosUserCache = {}; // Cache for username lookups
+
+    // Load SOS
+    async function loadSOS() {
+      try {
+        const response = await fetch("http://127.0.0.1:5000/api/sos");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        sosData = await response.json();
+        
+        // Load user data for username mapping
+        await loadUserData();
+        
+        // Apply current filters
+        filterSOSData();
+        
+        // Update stats
+        loadDashboardStats();
+      } catch (error) {
+        console.error("Error loading SOS requests:", error);
+        alert("Failed to load SOS requests. Please try again.");
+      }
+    }
+
+    // Load user data for username mapping
+    async function loadUserData() {
+      try {
+        // Get unique user IDs from SOS data
+        const userIds = [...new Set(sosData.map(s => s.user_id).filter(id => id))];
+        
+        // Fetch usernames for IDs not in cache
+        const uncachedIds = userIds.filter(id => !sosUserCache[id]);
+        
+        if (uncachedIds.length > 0) {
+          // Fetch users from the API
+          const response = await fetch("http://127.0.0.1:5000/api/users");
+          if (response.ok) {
+            const users = await response.json();
+            users.forEach(user => {
+              sosUserCache[user.id] = user.username;
+            });
+          } else {
+            // Fallback: create usernames based on user_id
+            uncachedIds.forEach(id => {
+              sosUserCache[id] = `User ${id}`;
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error loading user data:", error);
+        // Fallback: use user_id as display name
+        sosData.forEach(s => {
+          if (s.user_id && !sosUserCache[s.user_id]) {
+            sosUserCache[s.user_id] = `User ${s.user_id}`;
+          }
+        });
+      }
+    }
+
+    // Filter SOS data based on search and status
+    function filterSOSData() {
+      const searchTerm = document.getElementById('sosSearchInput').value.toLowerCase();
+      const statusFilter = document.getElementById('sosStatusFilter').value;
+      
+      filteredSOSData = sosData.filter(s => {
+        const username = sosUserCache[s.user_id] || `User ${s.user_id || 'Unknown'}`;
+        const matchesSearch = !searchTerm || 
+          s.id.toString().includes(searchTerm) ||
+          username.toLowerCase().includes(searchTerm) ||
+          s.message.toLowerCase().includes(searchTerm) ||
+          s.status.toLowerCase().includes(searchTerm);
+        
+        const matchesStatus = !statusFilter || s.status === statusFilter;
+        
+        return matchesSearch && matchesStatus;
+      });
+      
+      // Reset to first page when filtering
+      sosCurrentPage = 1;
+      displaySOSData();
+      updateSOSPagination();
+    }
+
+    // Display SOS data with pagination
+    function displaySOSData() {
+      const tbody = document.querySelector("#sosTable tbody");
+      tbody.innerHTML = "";
+      
+      if (filteredSOSData.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 2rem; color: #666;">
+              <i class="fas fa-inbox"></i><br>
+              No SOS requests found
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      const startIndex = (sosCurrentPage - 1) * sosItemsPerPage;
+      const endIndex = startIndex + sosItemsPerPage;
+      const pageData = filteredSOSData.slice(startIndex, endIndex);
+      
+      pageData.forEach(s => {
+        const username = sosUserCache[s.user_id] || `User ${s.user_id || 'Unknown'}`;
+        const location = s.latitude && s.longitude ? 
+          `${s.latitude.toFixed(4)}, ${s.longitude.toFixed(4)}` : 'Not provided';
+        const createdDate = s.created_at ? 
+          new Date(s.created_at).toLocaleDateString() : 'Unknown';
+        
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${s.id}</td>
+          <td>
+            <strong>${username}</strong>
+            <br><small style="color: #666;">ID: ${s.user_id || 'Unknown'}</small>
+          </td>
+          <td style="max-width: 200px; word-wrap: break-word;">${s.message}</td>
+          <td><small>${location}</small></td>
+          <td><span class="status-badge ${s.status}">${s.status}</span></td>
+          <td><small>${createdDate}</small></td>
+          <td class="actions">
+            ${s.status === 'new' ? `
+              <button class="btn-admin btn-sm warning" onclick="updateSOS(${s.id}, 'acknowledged')">
+                <i class="fas fa-eye"></i> Acknowledge
+              </button>
+            ` : ''}
+            ${s.status !== 'handled' ? `
+              <button class="btn-admin btn-sm success" onclick="updateSOS(${s.id}, 'handled')">
+                <i class="fas fa-check"></i> Handle
+              </button>
+            ` : ''}
+            <button class="btn-admin btn-sm secondary" onclick="viewSOSDetails(${s.id})">
+              <i class="fas fa-info-circle"></i> Details
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Update pagination controls
+    function updateSOSPagination() {
+      const totalPages = Math.ceil(filteredSOSData.length / sosItemsPerPage);
+      const pageInfo = document.getElementById('sosPageInfo');
+      const firstBtn = document.getElementById('sosFirstPage');
+      const prevBtn = document.getElementById('sosPrevPage');
+      const nextBtn = document.getElementById('sosNextPage');
+      const lastBtn = document.getElementById('sosLastPage');
+      
+      pageInfo.textContent = `Page ${sosCurrentPage} of ${totalPages} (${filteredSOSData.length} total)`;
+      
+      // Update button states
+      firstBtn.disabled = sosCurrentPage === 1;
+      prevBtn.disabled = sosCurrentPage === 1;
+      nextBtn.disabled = sosCurrentPage === totalPages || totalPages === 0;
+      lastBtn.disabled = sosCurrentPage === totalPages || totalPages === 0;
+      
+      // Update button opacity for disabled state
+      [firstBtn, prevBtn, nextBtn, lastBtn].forEach(btn => {
+        btn.style.opacity = btn.disabled ? '0.5' : '1';
+        btn.style.cursor = btn.disabled ? 'not-allowed' : 'pointer';
+      });
+    }
+
+    // Pagination functions
+    function goToSOSPage(page) {
+      const totalPages = Math.ceil(filteredSOSData.length / sosItemsPerPage);
+      if (page === 'last') {
+        sosCurrentPage = totalPages;
+      } else {
+        sosCurrentPage = Math.max(1, Math.min(page, totalPages));
+      }
+      displaySOSData();
+      updateSOSPagination();
+    }
+
+    function nextSOSPage() {
+      const totalPages = Math.ceil(filteredSOSData.length / sosItemsPerPage);
+      if (sosCurrentPage < totalPages) {
+        sosCurrentPage++;
+        displaySOSData();
+        updateSOSPagination();
+      }
+    }
+
+    function previousSOSPage() {
+      if (sosCurrentPage > 1) {
+        sosCurrentPage--;
+        displaySOSData();
+        updateSOSPagination();
+      }
+    }
+
+    function changeSOSItemsPerPage() {
+      sosItemsPerPage = parseInt(document.getElementById('sosItemsPerPage').value);
+      sosCurrentPage = 1;
+      displaySOSData();
+      updateSOSPagination();
+    }
+
+    // View SOS details in a modal/alert
+    function viewSOSDetails(id) {
+      const sos = sosData.find(s => s.id === id);
+      if (!sos) return;
+      
+      const username = sosUserCache[sos.user_id] || `User ${sos.user_id || 'Unknown'}`;
+      const location = sos.latitude && sos.longitude ? 
+        `Latitude: ${sos.latitude}, Longitude: ${sos.longitude}` : 'Location not provided';
+      const created = sos.created_at ? 
+        new Date(sos.created_at).toLocaleString() : 'Unknown';
+      
+      alert(`SOS Request Details\n\n` +
+            `ID: ${sos.id}\n` +
+            `User: ${username}\n` +
+            `Status: ${sos.status}\n` +
+            `Created: ${created}\n` +
+            `Location: ${location}\n\n` +
+            `Message: ${sos.message}`);
+    }
+
+    async function updateSOS(id, status) {
+      try {
+        const response = await fetch(`http://127.0.0.1:5000/api/sos/${id}`, {
+          method: "PATCH",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({ status })
+        });
+        
+        if (response.ok) {
+          // Update local data
+          const sosIndex = sosData.findIndex(s => s.id === id);
+          if (sosIndex !== -1) {
+            sosData[sosIndex].status = status;
+          }
+          
+          // Refilter and display
+          filterSOSData();
+          
+          // Show success message
+          showTemporaryMessage(`SOS ${id} status updated to ${status}`, 'success');
+        } else {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+      } catch (error) {
+        console.error("Error updating SOS:", error);
+        showTemporaryMessage("Failed to update SOS. Please try again.", 'error');
+      }
+    }
+
+    // Coordinate validation functions
+    function validateLatitude(value, errorElementId) {
+      const errorElement = document.getElementById(errorElementId);
+      const inputElement = document.querySelector(`#${errorElementId.replace('Error', '')}`);
+      
+      // Clear previous validation state
+      errorElement.classList.remove('show', 'error', 'success');
+      inputElement.classList.remove('invalid', 'valid');
+      
+      if (value === '' || value === null || value === undefined) {
+        return false; // Required field, but let HTML5 validation handle this
+      }
+      
+      const numValue = parseFloat(value);
+      
+      if (isNaN(numValue)) {
+        errorElement.textContent = 'Please enter a valid number';
+        errorElement.classList.add('show', 'error');
+        inputElement.classList.add('invalid');
+        return false;
+      }
+      
+      if (numValue < -90 || numValue > 90) {
+        errorElement.textContent = 'Latitude must be between -90 and +90 degrees';
+        errorElement.classList.add('show', 'error');
+        inputElement.classList.add('invalid');
+        return false;
+      }
+      
+      errorElement.textContent = 'Valid latitude';
+      errorElement.classList.add('show', 'success');
+      inputElement.classList.add('valid');
+      return true;
+    }
+
+    function validateLongitude(value, errorElementId) {
+      const errorElement = document.getElementById(errorElementId);
+      const inputElement = document.querySelector(`#${errorElementId.replace('Error', '')}`);
+      
+      // Clear previous validation state
+      errorElement.classList.remove('show', 'error', 'success');
+      inputElement.classList.remove('invalid', 'valid');
+      
+      if (value === '' || value === null || value === undefined) {
+        return false; // Required field, but let HTML5 validation handle this
+      }
+      
+      const numValue = parseFloat(value);
+      
+      if (isNaN(numValue)) {
+        errorElement.textContent = 'Please enter a valid number';
+        errorElement.classList.add('show', 'error');
+        inputElement.classList.add('invalid');
+        return false;
+      }
+      
+      if (numValue < -180 || numValue > 180) {
+        errorElement.textContent = 'Longitude must be between -180 and +180 degrees';
+        errorElement.classList.add('show', 'error');
+        inputElement.classList.add('invalid');
+        return false;
+      }
+      
+      errorElement.textContent = 'Valid longitude';
+      errorElement.classList.add('show', 'success');
+      inputElement.classList.add('valid');
+      return true;
+    }
+
+    // Validate all coordinates in a form
+    function validateAllCoordinates(formPrefix) {
+      const latInput = document.getElementById(`${formPrefix}Lat`);
+      const lngInput = document.getElementById(`${formPrefix}Lng`);
+      
+      const latValid = validateLatitude(latInput.value, `${formPrefix}LatError`);
+      const lngValid = validateLongitude(lngInput.value, `${formPrefix}LngError`);
+      
+      return latValid && lngValid;
+    }
+
+    // Show temporary message
+    function showTemporaryMessage(message, type = 'success') {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${type}`;
+      messageDiv.style.position = 'fixed';
+      messageDiv.style.top = '100px';
+      messageDiv.style.right = '20px';
+      messageDiv.style.zIndex = '10000';
+      messageDiv.style.maxWidth = '300px';
+      messageDiv.textContent = message;
+      
+      document.body.appendChild(messageDiv);
+      
+      setTimeout(() => {
+        if (messageDiv.parentNode) {
+          messageDiv.parentNode.removeChild(messageDiv);
+        }
+      }, 3000);
+    }
+
+    // Clear validation states for a form
+    function clearValidationStates(formPrefix) {
+      const latInput = document.getElementById(`${formPrefix}Lat`);
+      const lngInput = document.getElementById(`${formPrefix}Lng`);
+      const latError = document.getElementById(`${formPrefix}LatError`);
+      const lngError = document.getElementById(`${formPrefix}LngError`);
+      
+      if (latInput) {
+        latInput.classList.remove('invalid', 'valid');
+      }
+      if (lngInput) {
+        lngInput.classList.remove('invalid', 'valid');
+      }
+      if (latError) {
+        latError.classList.remove('show', 'error', 'success');
+        latError.textContent = '';
+      }
+      if (lngError) {
+        lngError.classList.remove('show', 'error', 'success');
+        lngError.textContent = '';
+      }
+    }
+
+    // Setup search and filter event listeners
+    document.addEventListener('DOMContentLoaded', function() {
+      // Existing initialization code...
+      loadAdminInfo();
+      loadDashboardStats();
+      loadIncidents();
+      loadSOS();
+      
+      // Setup SOS search and filter
+      const sosSearchInput = document.getElementById('sosSearchInput');
+      const sosStatusFilter = document.getElementById('sosStatusFilter');
+      
+      if (sosSearchInput) {
+        sosSearchInput.addEventListener('input', filterSOSData);
+      }
+      
+      if (sosStatusFilter) {
+        sosStatusFilter.addEventListener('change', filterSOSData);
+      }
+      
+      // Setup Incident search and filter
+      const incidentSearchInput = document.getElementById('incidentSearchInput');
+      const incidentStatusFilter = document.getElementById('incidentStatusFilter');
+      
+      if (incidentSearchInput) {
+        incidentSearchInput.addEventListener('input', filterIncidentData);
+      }
+      
+      if (incidentStatusFilter) {
+        incidentStatusFilter.addEventListener('change', filterIncidentData);
+      }
+      
+      // Setup coordinate validation for shelter form
+      const shelterLatInput = document.getElementById('shelterLat');
+      const shelterLngInput = document.getElementById('shelterLng');
+      
+      if (shelterLatInput) {
+        shelterLatInput.addEventListener('input', function() {
+          validateLatitude(this.value, 'shelterLatError');
+        });
+        shelterLatInput.addEventListener('blur', function() {
+          validateLatitude(this.value, 'shelterLatError');
+        });
+      }
+      
+      if (shelterLngInput) {
+        shelterLngInput.addEventListener('input', function() {
+          validateLongitude(this.value, 'shelterLngError');
+        });
+        shelterLngInput.addEventListener('blur', function() {
+          validateLongitude(this.value, 'shelterLngError');
+        });
+      }
+      
+      // Setup coordinate validation for relief form
+      const reliefLatInput = document.getElementById('reliefLat');
+      const reliefLngInput = document.getElementById('reliefLng');
+      
+      if (reliefLatInput) {
+        reliefLatInput.addEventListener('input', function() {
+          validateLatitude(this.value, 'reliefLatError');
+        });
+        reliefLatInput.addEventListener('blur', function() {
+          validateLatitude(this.value, 'reliefLatError');
+        });
+      }
+      
+      if (reliefLngInput) {
+        reliefLngInput.addEventListener('input', function() {
+          validateLongitude(this.value, 'reliefLngError');
+        });
+        reliefLngInput.addEventListener('blur', function() {
+          validateLongitude(this.value, 'reliefLngError');
+        });
+      }
+    });
+
+    // Logout using access control module
+    function logout() {
+      console.log(`[ADMIN_DASHBOARD] Admin ${currentUser.id} logging out`);
+      ACCESS_CONTROL.logout();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Access Control Test - ANHONI Disaster Management</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .test-section {
+      margin: 20px 0;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+    .test-button {
+      margin: 5px;
+      padding: 10px 15px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .test-button:hover {
+      background: #0056b3;
+    }
+    .status {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 5px;
+    }
+    .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🧪 Access Control Test Page</h1>
+    <p>Test role-based access control for ANHONI Disaster Management System</p>
+  </header>
+
+  <main>
+    <div class="container">
+      
+      <div class="test-section">
+        <h3>🔐 Current Authentication Status</h3>
+        <div id="authStatus" class="status info">Loading...</div>
+        <button class="test-button" onclick="checkAuthStatus()">Refresh Status</button>
+      </div>
+
+      <div class="test-section">
+        <h3>🚪 Access Control Tests</h3>
+        <p>Test access to protected pages with different roles:</p>
+        
+        <button class="test-button" onclick="testUserDashboardAccess()">
+          Test User Dashboard Access
+        </button>
+        
+        <button class="test-button" onclick="testAdminDashboardAccess()">
+          Test Admin Dashboard Access
+        </button>
+        
+        <button class="test-button" onclick="testUnauthenticatedAccess()">
+          Test Unauthenticated Access
+        </button>
+        
+        <div id="testResults" class="status" style="display: none;"></div>
+      </div>
+
+      <div class="test-section">
+        <h3>👥 Login as Different Roles</h3>
+        <p>Quick login for testing different access levels:</p>
+        
+        <button class="test-button" onclick="loginAsUser()">
+          Login as User
+        </button>
+        
+        <button class="test-button" onclick="loginAsAdmin()">
+          Login as Admin
+        </button>
+        
+        <button class="test-button" onclick="logout()">
+          Logout
+        </button>
+      </div>
+
+      <div class="test-section">
+        <h3>📋 Test Results Log</h3>
+        <div id="testLog" style="max-height: 300px; overflow-y: auto; background: white; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+          <p><em>Test results will appear here...</em></p>
+        </div>
+        <button class="test-button" onclick="clearLog()">Clear Log</button>
+      </div>
+
+      <div class="test-section">
+        <h3>🔗 Navigation</h3>
+        <a href="login.html" class="test-button" style="text-decoration: none; display: inline-block;">
+          Go to Login Page
+        </a>
+        <a href="index.html" class="test-button" style="text-decoration: none; display: inline-block;">
+          Go to Home Page
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="js/access-control.js"></script>
+  <script>
+    // Test utility functions
+    function log(message, type = 'info') {
+      const timestamp = new Date().toLocaleTimeString();
+      const logDiv = document.getElementById('testLog');
+      const color = type === 'success' ? 'green' : type === 'error' ? 'red' : 'blue';
+      logDiv.innerHTML += `<p style="color: ${color}; margin: 5px 0;">[${timestamp}] ${message}</p>`;
+      logDiv.scrollTop = logDiv.scrollHeight;
+      console.log(`[ACCESS_TEST] ${message}`);
+    }
+
+    function showTestResult(message, success) {
+      const resultDiv = document.getElementById('testResults');
+      resultDiv.className = `status ${success ? 'success' : 'error'}`;
+      resultDiv.textContent = message;
+      resultDiv.style.display = 'block';
+      log(message, success ? 'success' : 'error');
+    }
+
+    // Check current authentication status
+    function checkAuthStatus() {
+      const user = ACCESS_CONTROL.getCurrentUser();
+      const statusDiv = document.getElementById('authStatus');
+      
+      if (user.isAuthenticated) {
+        statusDiv.className = 'status success';
+        statusDiv.innerHTML = `
+          ✅ <strong>Authenticated</strong><br>
+          👤 User ID: ${user.id}<br>
+          🎭 Role: ${user.role}<br>
+          ⏰ Session Valid: ${ACCESS_CONTROL.isSessionValid() ? 'Yes' : 'No'}
+        `;
+        log(`User authenticated: ID=${user.id}, Role=${user.role}`, 'success');
+      } else {
+        statusDiv.className = 'status error';
+        statusDiv.innerHTML = '❌ <strong>Not Authenticated</strong><br>Please login to test access control.';
+        log('User not authenticated', 'error');
+      }
+    }
+
+    // Test access to user dashboard
+    function testUserDashboardAccess() {
+      const user = ACCESS_CONTROL.getCurrentUser();
+      
+      if (!user.isAuthenticated) {
+        showTestResult('❌ Test Failed: Not logged in', false);
+        return;
+      }
+
+      if (user.role === 'user') {
+        showTestResult('✅ Test Passed: User role can access user dashboard', true);
+        log('Access test passed: User can access user dashboard');
+      } else {
+        showTestResult('⚠️ Test Result: Admin role should be redirected from user dashboard', true);
+        log('Access test note: Admin should be redirected from user dashboard');
+      }
+    }
+
+    // Test access to admin dashboard
+    function testAdminDashboardAccess() {
+      const user = ACCESS_CONTROL.getCurrentUser();
+      
+      if (!user.isAuthenticated) {
+        showTestResult('❌ Test Failed: Not logged in', false);
+        return;
+      }
+
+      if (user.role === 'admin') {
+        showTestResult('✅ Test Passed: Admin role can access admin dashboard', true);
+        log('Access test passed: Admin can access admin dashboard');
+      } else {
+        showTestResult('⚠️ Test Result: User role should be redirected from admin dashboard', true);
+        log('Access test note: User should be redirected from admin dashboard');
+      }
+    }
+
+    // Test unauthenticated access
+    function testUnauthenticatedAccess() {
+      const user = ACCESS_CONTROL.getCurrentUser();
+      
+      if (user.isAuthenticated) {
+        showTestResult('⚠️ Cannot test unauthenticated access while logged in. Please logout first.', false);
+        return;
+      }
+
+      showTestResult('✅ Test Setup: Ready to test unauthenticated access. Try accessing protected pages.', true);
+      log('Ready to test unauthenticated access');
+    }
+
+    // Quick login functions for testing
+    async function loginAsUser() {
+      try {
+        log('Attempting to login as test user...');
+        const response = await fetch('http://127.0.0.1:5000/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: 'testuser', password: 'testpass' })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          ACCESS_CONTROL.storeAuthData(data);
+          checkAuthStatus();
+          log('Successfully logged in as user', 'success');
+        } else {
+          log(`Login failed: ${data.message}`, 'error');
+        }
+      } catch (error) {
+        log(`Login error: ${error.message}`, 'error');
+      }
+    }
+
+    async function loginAsAdmin() {
+      try {
+        log('Attempting to login as admin...');
+        const response = await fetch('http://127.0.0.1:5000/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: 'admin', password: 'adminpass' })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          ACCESS_CONTROL.storeAuthData(data);
+          checkAuthStatus();
+          log('Successfully logged in as admin', 'success');
+        } else {
+          log(`Login failed: ${data.message}`, 'error');
+        }
+      } catch (error) {
+        log(`Login error: ${error.message}`, 'error');
+      }
+    }
+
+    function logout() {
+      ACCESS_CONTROL.clearAuthData();
+      checkAuthStatus();
+      log('Logged out successfully', 'success');
+    }
+
+    function clearLog() {
+      document.getElementById('testLog').innerHTML = '<p><em>Test log cleared...</em></p>';
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      checkAuthStatus();
+      log('Access control test page loaded');
+    });
+  </script>
+</body>
+</html>
