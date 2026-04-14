@@ -282,6 +282,148 @@
       border: 1.5px solid #253450;
     }
 
+    /* Shelter Card Styles */
+    .shelter-card {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1.5px solid #334155;
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .shelter-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .shelter-card:hover {
+      border-color: #3b82f6;
+      box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .shelter-card:hover::before {
+      opacity: 1;
+    }
+
+    .shelter-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .shelter-card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #51b7f5;
+      margin: 0;
+      flex: 1;
+    }
+
+    .shelter-card-icon {
+      font-size: 1.5rem;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(59, 130, 246, 0.1);
+      border-radius: 8px;
+      color: #3b82f6;
+      margin-left: 1rem;
+    }
+
+    .shelter-card.relief .shelter-card-icon {
+      background: rgba(34, 197, 94, 0.1);
+      color: #22c55e;
+    }
+
+    .shelter-detail {
+      display: flex;
+      align-items: center;
+      margin: 0.8rem 0;
+      color: #cbd5e1;
+      font-size: 0.95rem;
+    }
+
+    .shelter-detail i {
+      width: 20px;
+      margin-right: 0.8rem;
+      color: #51b7f5;
+      flex-shrink: 0;
+    }
+
+    .shelter-card.relief .shelter-detail i {
+      color: #22c55e;
+    }
+
+    .shelter-detail-label {
+      font-weight: 600;
+      color: #a1b5ce;
+      margin-right: 0.5rem;
+    }
+
+    .shelter-capacity {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #334155;
+    }
+
+    .capacity-stat {
+      text-align: center;
+      padding: 0.8rem;
+      background: rgba(59, 130, 246, 0.05);
+      border-radius: 8px;
+      border: 1px solid rgba(59, 130, 246, 0.1);
+    }
+
+    .capacity-stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #51b7f5;
+      display: block;
+    }
+
+    .capacity-stat-label {
+      font-size: 0.8rem;
+      color: #7c8db5;
+      margin-top: 0.3rem;
+    }
+
+    .distance-badge {
+      display: inline-block;
+      background: rgba(34, 197, 94, 0.15);
+      color: #22c55e;
+      padding: 0.3rem 0.8rem;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-top: 1rem;
+    }
+
+    .shelter-card.relief {
+      border-color: #16a34a;
+    }
+
+    .shelter-card.relief:hover {
+      border-color: #22c55e;
+      box-shadow: 0 8px 24px rgba(34, 197, 94, 0.15);
+    }
+
     /* Responsive Design */
     @media (max-width: 1016px) {
       .dashboard-container { flex-direction: column; }
@@ -436,11 +578,31 @@
 
       <!-- Disaster Map Section -->
       <section id="disaster-map" class="content-section">
-        <h2><i class="fas fa-map-marked-alt"></i> Interactive Disaster Map</h2>
+        <h2><i class="fas fa-map-marked-alt"></i> Interactive Disaster Map & Nearby Shelters</h2>
         <div style="margin-bottom: 1rem;">
-          <p>View real-time disaster information, incidents, shelters, and relief centers on the map below.</p>
+          <p>View your live location and real-time disaster information, incidents, and relief centers on the map below.</p>
         </div>
-        <div id="map"></div>
+        
+        <!-- User Location Status -->
+        <div id="locationStatus" style="background: #1e293b; border-left: 4px solid #1e40af; padding: 1rem; border-radius: 6px; margin-bottom: 1.5rem; color: #e0e7ff;">
+          <i class="fas fa-location-dot" style="color: #3b82f6; margin-right: 0.5rem;"></i>
+          <span id="locationText">Detecting your location...</span>
+        </div>
+        
+        <div id="map" style="position: relative;"></div>
+        
+        <!-- Nearby Shelters Section -->
+        <div id="nearbySheltersContainer" style="margin-top: 2.5rem;">
+          <h3 style="color: #51b7f5; margin-bottom: 1.5rem; font-size: 1.15rem;">
+            <i class="fas fa-building" style="margin-right: 0.5rem;"></i> Nearby Shelters & Relief Centers (within 10 km)
+          </h3>
+          <div id="nearbySheltersList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+            <div style="grid-column: 1/-1; text-align: center; color: #7c8db5; padding: 2rem;">
+              <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 1rem; display: block;"></i>
+              Loading nearby shelters...
+            </div>
+          </div>
+        </div>
       </section>
     </main>
   </div>
