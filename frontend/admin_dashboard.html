@@ -1,0 +1,4390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Disaster Command Center — Premium Admin Dashboard</title>
+
+<!-- Fonts & Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+/* -------------------------
+   Premium Disaster Management Dashboard
+   Modern glassmorphism + neon accents + premium animations
+   ------------------------- */
+
+:root{
+  --bg-primary: #0a0e1a;
+  --bg-secondary: #111827;
+  --bg-glass: rgba(30, 41, 59, 0.7);
+  --bg-card: rgba(51, 65, 85, 0.8);
+  --bg-elevated: rgba(71, 85, 105, 0.9);
+  
+  --primary: #3b82f6;
+  --primary-glow: rgba(59, 130, 246, 0.3);
+  --accent: #10b981;
+  --accent-glow: rgba(16, 185, 129, 0.3);
+  --warning: #f59e0b;
+  --warning-glow: rgba(245, 158, 11, 0.3);
+  --danger: #ef4444;
+  --danger-glow: rgba(239, 68, 68, 0.3);
+  --success: #22c55e;
+  --success-glow: rgba(34, 197, 94, 0.3);
+  
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-faded: #64748b;
+  
+  --border: rgba(148, 163, 184, 0.1);
+  --border-strong: rgba(148, 163, 184, 0.2);
+  
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 16px 64px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0 0 32px var(--primary-glow);
+  
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  
+  --sidebar-w: 300px;
+  --topbar-h: 80px;
+  --spacing: 20px;
+  
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* Glassmorphism utilities */
+.glass {
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+}
+
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-md);
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 20px var(--primary-glow); }
+  50% { box-shadow: 0 0 40px var(--primary-glow), 0 0 60px var(--primary-glow); }
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Reset & Base */
+* { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background: linear-gradient(135deg, var(--bg-primary) 0%, #1e293b 100%);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Background Effects */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 20% 80%, var(--primary-glow) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, var(--accent-glow) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, var(--warning-glow) 0%, transparent 50%);
+  z-index: -1;
+  animation: pulse 8s ease-in-out infinite;
+}
+
+/* App Layout */
+.app-root {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  grid-template-rows: var(--topbar-h) 1fr;
+  min-height: 100vh;
+  gap: 0;
+}
+
+/* Sidebar */
+.sidebar {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  padding: var(--spacing);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing);
+  animation: slideIn 0.8s ease-out;
+}
+
+.sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border-right: 1px solid var(--border);
+  z-index: -1;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
+  box-shadow: var(--shadow-glow), var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.brand::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+  transform: rotate(45deg);
+  animation: sweep 3s linear infinite;
+}
+
+@keyframes sweep {
+  0% { transform: translateX(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) rotate(45deg); }
+}
+
+.brand-icon {
+  width: 56px;
+  height: 56px;
+  background: rgba(255,255,255,0.2);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+  box-shadow: inset 0 2px 4px rgba(255,255,255,0.2);
+}
+
+.brand-text h1 {
+  font-size: 20px;
+  font-weight: 800;
+  color: white;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.brand-text p {
+  font-size: 14px;
+  color: rgba(255,255,255,0.8);
+  font-weight: 500;
+}
+
+/* Navigation */
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--text-secondary);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-item i {
+  width: 24px;
+  text-align: center;
+  font-size: 18px;
+  transition: transform 0.3s ease;
+}
+
+.nav-item:hover {
+  background: rgba(255,255,255,0.05);
+  color: var(--text-primary);
+  transform: translateX(8px);
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
+}
+
+.nav-item:hover i {
+  transform: scale(1.2);
+}
+
+.nav-item.active {
+  background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
+  color: white;
+  box-shadow: var(--shadow-glow), var(--shadow-md);
+  transform: translateX(8px);
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+  animation: sweep 2s linear infinite;
+}
+
+/* User Profile */
+.user-profile {
+  margin-top: auto;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--accent) 0%, #059669 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 800;
+  font-size: 18px;
+  box-shadow: var(--shadow-md);
+}
+
+.user-info h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.user-info p {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Topbar */
+.topbar {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--spacing);
+  background: var(--bg-glass);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar-left h1 {
+  font-size: 28px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.topbar-left p {
+  font-size: 15px;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Search Bar */
+.search-container {
+  position: relative;
+  width: 400px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 16px 24px 16px 56px;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 500;
+  outline: none;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.search-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--primary-glow), var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.search-icon {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 18px;
+  transition: color 0.3s ease;
+}
+
+.search-input:focus + .search-icon {
+  color: var(--primary);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-sm);
+  text-decoration: none;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  background: var(--bg-elevated);
+  border-color: var(--border-strong);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, #6366f1 100%);
+  border-color: var(--primary);
+  color: white;
+  box-shadow: var(--shadow-glow), var(--shadow-sm);
+}
+
+.btn-primary:hover {
+  box-shadow: var(--shadow-glow), var(--shadow-lg);
+  transform: translateY(-4px);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, var(--success) 0%, #16a34a 100%);
+  border-color: var(--success);
+  color: white;
+  box-shadow: 0 0 20px var(--success-glow), var(--shadow-sm);
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
+  border-color: var(--warning);
+  color: white;
+  box-shadow: 0 0 20px var(--warning-glow), var(--shadow-sm);
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+  border-color: var(--danger);
+  color: white;
+  box-shadow: 0 0 20px var(--danger-glow), var(--shadow-sm);
+}
+
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 13px;
+}
+
+/* Main Content */
+.main-content {
+  grid-column: 2;
+  grid-row: 2;
+  padding: var(--spacing);
+  overflow: auto;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: var(--spacing);
+  align-items: start;
+}
+
+/* Cards */
+.card {
+  background: var(--bg-card);
+  backdrop-filter: blur(24px);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  box-shadow: var(--shadow-md);
+  animation: fadeInUp 0.6s ease-out;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-primary);
+  background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.card-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: var(--spacing);
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-top: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-change {
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-change.positive {
+  color: var(--success);
+}
+
+.stat-change.negative {
+  color: var(--danger);
+}
+
+/* Tables */
+.table-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 16px 20px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.table th {
+  background: var(--bg-elevated);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.table td {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-reported {
+  background: var(--warning-glow);
+  color: var(--warning);
+  border: 1px solid var(--warning);
+}
+
+.badge-verified {
+  background: var(--primary-glow);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.badge-resolved {
+  background: var(--success-glow);
+  color: var(--success);
+  border: 1px solid var(--success);
+}
+
+.badge-new {
+  background: var(--danger-glow);
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  animation: pulse 2s infinite;
+}
+
+.badge-acknowledged {
+  background: var(--primary-glow);
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.badge-handled {
+  background: var(--success-glow);
+  color: var(--success);
+  border: 1px solid var(--success);
+}
+
+/* Form Controls */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 15px;
+  font-weight: 500;
+  outline: none;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(20px);
+}
+
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--primary-glow);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* Filters */
+.filters {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-item {
+  min-width: 200px;
+}
+
+/* Pagination */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: between;
+  gap: 16px;
+  margin-top: 20px;
+  padding: 20px 0;
+}
+
+.pagination-info {
+  color: var(--text-muted);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* Map */
+.map-container {
+  height: 500px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border);
+}
+
+.map-controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.map-legend {
+  display: flex;
+  gap: 20px;
+  margin-top: 16px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: var(--radius-lg);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(10, 14, 26, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.modal.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-xl);
+  padding: 32px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(24px);
+  transform: scale(0.9) translateY(20px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal.show .modal-content {
+  transform: scale(1) translateY(0);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: var(--radius-md);
+  transition: all 0.3s ease;
+}
+
+.modal-close:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+
+/* Toast Notifications */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(24px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 400px;
+  transform: translateX(100%);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1100;
+}
+
+.toast.show {
+  transform: translateX(0);
+}
+
+.toast-icon {
+  font-size: 20px;
+  color: var(--primary);
+}
+
+.toast-content h4 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.toast-content p {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.toast-success .toast-icon { color: var(--success); }
+.toast-warning .toast-icon { color: var(--warning); }
+.toast-error .toast-icon { color: var(--danger); }
+
+/* Loading States */
+.loading {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  border-top-color: var(--primary);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-icon {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+}
+
+/* City Column */
+.city-tag {
+  display: inline-block;
+  padding: 4px 8px;
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--primary);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Enhanced Search Results */
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(24px);
+  max-height: 400px;
+  overflow-y: auto;
+  z-index: 100;
+  margin-top: 8px;
+}
+
+.search-result-item {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search-result-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.search-result-item:last-child {
+  border-bottom: none;
+}
+
+.search-result-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: white;
+}
+
+.search-result-content h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.search-result-content p {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .app-root {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr;
+  }
+  
+  .sidebar {
+    grid-column: 1;
+    grid-row: 1;
+    flex-direction: row;
+    padding: 12px;
+    height: auto;
+    overflow-x: auto;
+  }
+  
+  .sidebar::before {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .nav {
+    flex-direction: row;
+    gap: 8px;
+    min-width: max-content;
+  }
+  
+  .nav-item {
+    white-space: nowrap;
+    padding: 12px 16px;
+  }
+  
+  .topbar {
+    grid-column: 1;
+    grid-row: 2;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+  }
+  
+  .search-container {
+    width: 100%;
+  }
+  
+  .main-content {
+    grid-column: 1;
+    grid-row: 3;
+    padding: 16px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .filters {
+    flex-direction: column;
+  }
+  
+  .filter-item {
+    min-width: unset;
+  }
+  
+  .action-buttons {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand {
+    padding: 12px;
+  }
+  
+  .brand-text h1 {
+    font-size: 16px;
+  }
+  
+  .card {
+    padding: 16px;
+  }
+  
+  .card-title {
+    font-size: 20px;
+  }
+  
+  .table th,
+  .table td {
+    padding: 12px;
+    font-size: 13px;
+  }
+  
+  .modal-content {
+    padding: 20px;
+    margin: 16px;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="app-root" id="app-root">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">
+          <i class="fas fa-shield-alt"></i>
+        </div>
+        <div class="brand-text">
+          <h1>DisasterCommand</h1>
+          <p>Emergency Operations Center</p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <button class="nav-item active" data-section="dashboard">
+          <i class="fas fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-item" data-section="incidents">
+          <i class="fas fa-exclamation-triangle"></i>
+          <span>Incidents</span>
+        </button>
+        <button class="nav-item" data-section="sos">
+          <i class="fas fa-phone-alt"></i>
+          <span>SOS Alerts</span>
+        </button>
+        <button class="nav-item" data-section="shelters">
+          <i class="fas fa-home"></i>
+          <span>Shelters</span>
+        </button>
+        <button class="nav-item" data-section="relief">
+          <i class="fas fa-hands-helping"></i>
+          <span>Relief Centers</span>
+        </button>
+      </nav>
+
+      <div class="user-profile">
+        <div class="user-avatar">
+          <i class="fas fa-user-shield"></i>
+        </div>
+        <div class="user-info">
+          <h4>Admin User</h4>
+          <p id="userRole">System Administrator</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 id="pageTitle">Command Dashboard</h1>
+        <p id="pageSubtitle">Real-time disaster management and response coordination</p>
+      </div>
+
+      <div class="topbar-right">
+        <div class="search-container">
+          <input 
+            type="text" 
+            class="search-input" 
+            id="globalSearch" 
+            placeholder="Search incidents, shelters, SOS alerts..."
+            autocomplete="off"
+          >
+          <i class="fas fa-search search-icon"></i>
+          <div class="search-results" id="searchResults" style="display: none;"></div>
+        </div>
+
+        <button class="btn btn-primary" id="quickAlertBtn">
+          <i class="fas fa-plus"></i>
+          <span>Quick Alert</span>
+        </button>
+
+        <button class="btn" id="refreshBtn">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <div id="mainContent">
+        <!-- Dashboard will be rendered here -->
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Modal Title</h2>
+        <button class="modal-close" id="modalClose">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- Modal content goes here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <div class="toast-icon" id="toastIcon">
+      <i class="fas fa-info-circle"></i>
+    </div>
+    <div class="toast-content">
+      <h4 id="toastTitle">Notification</h4>
+      <p id="toastMessage">Message content</p>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  <script>
+  /**
+   * Premium Disaster Management Dashboard
+   * Advanced features with glassmorphism UI and comprehensive functionality
+   */
+
+  // Configuration
+  const CONFIG = {
+    API_BASE: "http://127.0.0.1:5000/api",
+    REFRESH_INTERVAL: 30000,
+    ITEMS_PER_PAGE: 15,
+    MAP_CENTER: [28.6139, 77.2090], // Greater Noida
+    MAP_ZOOM: 10
+  };
+
+  // State Management
+  class AppState {
+    constructor() {
+      this.accessToken = localStorage.getItem('access_token') || null;
+      this.userRole = localStorage.getItem('role') || 'admin';
+      this.userId = localStorage.getItem('user_id') || null;
+      this.currentSection = 'dashboard';
+      
+      // Data stores
+      this.incidents = [];
+      this.shelters = [];
+      this.relief = [];
+      this.sosAlerts = [];
+      
+      // Pagination states
+      this.pagination = {
+        incidents: { page: 1, total: 0, filters: {} },
+        shelters: { page: 1, total: 0, filters: {} },
+        relief: { page: 1, total: 0, filters: {} },
+        sos: { page: 1, total: 0, filters: {} }
+      };
+      
+      // Map instance
+      this.map = null;
+      this.mapLayers = {};
+    }
+    
+    getAuthHeaders() {
+      const headers = { 'Content-Type': 'application/json' };
+      if (this.accessToken) {
+        headers['Authorization'] = `Bearer ${this.accessToken}`;
+      }
+      return headers;
+    }
+  }
+
+  const state = new AppState();
+
+  // Utility Functions
+  const utils = {
+    escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    },
+
+    formatDate(dateStr) {
+      if (!dateStr) return 'N/A';
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    },
+
+    debounce(func, wait) {
+      let timeout;
+      return function executedFunction(...args) {
+        const later = () => {
+          clearTimeout(timeout);
+          func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+      };
+    },
+
+    generateId() {
+      return Math.random().toString(36).substr(2, 9);
+    },
+
+    getRandomCoordinates() {
+      // Generate random coordinates around Greater Noida area
+      const baseLat = 28.6139;
+      const baseLng = 77.2090;
+      const radius = 0.1; // Roughly 10km radius
+      
+      const lat = baseLat + (Math.random() - 0.5) * radius;
+      const lng = baseLng + (Math.random() - 0.5) * radius;
+      
+      return { lat, lng };
+    },
+
+    extractCity(location) {
+      if (!location) return 'Unknown';
+      if (typeof location === 'string') return location;
+      if (location.city) return location.city;
+      if (location.address) {
+        const parts = location.address.split(',');
+        return parts[parts.length - 2]?.trim() || 'Unknown';
+      }
+      return 'Greater Noida'; // Default for our region
+    }
+  };
+
+  // UI Components
+  const UI = {
+    showToast(title, message, type = 'info') {
+      const toast = document.getElementById('toast');
+      const toastIcon = document.getElementById('toastIcon');
+      const toastTitle = document.getElementById('toastTitle');
+      const toastMessage = document.getElementById('toastMessage');
+      
+      // Set content
+      toastTitle.textContent = title;
+      toastMessage.textContent = message;
+      
+      // Set icon based on type
+      const icons = {
+        success: 'fas fa-check-circle',
+        error: 'fas fa-exclamation-circle',
+        warning: 'fas fa-exclamation-triangle',
+        info: 'fas fa-info-circle'
+      };
+      
+      toastIcon.innerHTML = `<i class="${icons[type] || icons.info}"></i>`;
+      toast.className = `toast toast-${type}`;
+      
+      // Show toast
+      toast.classList.add('show');
+      
+      // Auto hide after 4 seconds
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 4000);
+    },
+
+    showModal(title, content, footer = '') {
+      const modal = document.getElementById('modal');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalBody = document.getElementById('modalBody');
+      
+      modalTitle.textContent = title;
+      modalBody.innerHTML = content;
+      
+      if (footer) {
+        const existingFooter = modal.querySelector('.modal-footer');
+        if (existingFooter) existingFooter.remove();
+        
+        const footerDiv = document.createElement('div');
+        footerDiv.className = 'modal-footer';
+        footerDiv.innerHTML = footer;
+        modal.querySelector('.modal-content').appendChild(footerDiv);
+      }
+      
+      modal.classList.add('show');
+    },
+
+    hideModal() {
+      document.getElementById('modal').classList.remove('show');
+    },
+
+    setLoading(element, loading = true) {
+      if (loading) {
+        element.innerHTML = `
+          <div style="display: flex; align-items: center; justify-content: center; padding: 40px;">
+            <div class="loading"></div>
+            <span style="margin-left: 12px; color: var(--text-muted);">Loading...</span>
+          </div>
+        `;
+      }
+    },
+
+    createActionButton(icon, text, className = '', onClick = null) {
+      const btn = document.createElement('button');
+      btn.className = `btn btn-sm ${className}`;
+      btn.innerHTML = `<i class="${icon}"></i><span>${text}</span>`;
+      if (onClick) btn.onclick = onClick;
+      return btn;
+    },
+
+    createBadge(text, type = 'default') {
+      const badge = document.createElement('span');
+      badge.className = `badge badge-${type}`;
+      badge.innerHTML = `<i class="fas fa-circle" style="font-size: 6px;"></i><span>${text}</span>`;
+      return badge;
+    }
+  };
+
+  // Data Management
+  const DataManager = {
+    async fetchData(endpoint, options = {}) {
+      try {
+        const response = await fetch(`${CONFIG.API_BASE}${endpoint}`, {
+          headers: state.getAuthHeaders(),
+          ...options
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return await response.json();
+      } catch (error) {
+        console.error(`Error fetching ${endpoint}:`, error);
+        return this.getCachedData(endpoint);
+      }
+    },
+
+    async postData(endpoint, data, options = {}) {
+      try {
+        const response = await fetch(`${CONFIG.API_BASE}${endpoint}`, {
+          method: 'POST',
+          headers: state.getAuthHeaders(),
+          body: JSON.stringify(data),
+          ...options
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return await response.json();
+      } catch (error) {
+        console.error(`Error posting to ${endpoint}:`, error);
+        throw error;
+      }
+    },
+
+    async updateData(endpoint, data, options = {}) {
+      try {
+        const response = await fetch(`${CONFIG.API_BASE}${endpoint}`, {
+          method: 'PATCH',
+          headers: state.getAuthHeaders(),
+          body: JSON.stringify(data),
+          ...options
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return await response.json();
+      } catch (error) {
+        console.error(`Error updating ${endpoint}:`, error);
+        throw error;
+      }
+    },
+
+    getCachedData(endpoint) {
+      switch (endpoint) {
+        case '/incidents':
+          return [...state.incidents];
+        case '/shelters':
+          return [...state.shelters];
+        case '/relief':
+          return [...state.relief];
+        case '/sos':
+          return [...state.sosAlerts];
+        default:
+          return [];
+      }
+    },
+
+    getMockData(endpoint) {
+      // Generate realistic mock data based on endpoint
+      switch (endpoint) {
+        case '/incidents':
+          return this.generateMockIncidents();
+        case '/shelters':
+          return this.generateMockShelters();
+        case '/relief':
+          return this.generateMockRelief();
+        case '/sos':
+          return this.generateMockSOS();
+        default:
+          return [];
+      }
+    },
+
+    generateMockIncidents() {
+      const types = ['Flood', 'Fire', 'Earthquake', 'Storm', 'Accident'];
+      const statuses = ['reported', 'verified', 'resolved'];
+      const cities = ['Greater Noida', 'Noida', 'Ghaziabad', 'Delhi', 'Faridabad'];
+      
+      return Array.from({ length: 25 }, (_, i) => {
+        const coords = utils.getRandomCoordinates();
+        const type = types[Math.floor(Math.random() * types.length)];
+        const city = cities[Math.floor(Math.random() * cities.length)];
+        
+        return {
+          id: i + 1,
+          title: `${type} Emergency in ${city}`,
+          description: `Emergency response required for ${type.toLowerCase()} incident`,
+          status: statuses[Math.floor(Math.random() * statuses.length)],
+          user_id: `user_${Math.floor(Math.random() * 10) + 1}`,
+          latitude: coords.lat,
+          longitude: coords.lng,
+          city: city,
+          created_at: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
+          updated_at: new Date(Date.now() - Math.random() * 2 * 24 * 60 * 60 * 1000).toISOString()
+        };
+      });
+    },
+
+    generateMockShelters() {
+      const names = ['Community Center', 'School Shelter', 'Emergency Hall', 'Relief Camp', 'Safe House'];
+      const cities = ['Greater Noida', 'Noida', 'Ghaziabad', 'Delhi', 'Faridabad'];
+      
+      return Array.from({ length: 15 }, (_, i) => {
+        const coords = utils.getRandomCoordinates();
+        const name = names[Math.floor(Math.random() * names.length)];
+        const city = cities[Math.floor(Math.random() * cities.length)];
+        const capacity = Math.floor(Math.random() * 500) + 50;
+        const occupied = Math.floor(Math.random() * capacity);
+        
+        return {
+          id: i + 1,
+          name: `${name} - ${city}`,
+          capacity: capacity,
+          occupied: occupied,
+          available: capacity - occupied,
+          contact: `+91 ${Math.floor(Math.random() * 9000000000) + 1000000000}`,
+          address: `Sector ${Math.floor(Math.random() * 50) + 1}, ${city}`,
+          latitude: coords.lat,
+          longitude: coords.lng,
+          city: city,
+          facilities: ['Medical Aid', 'Food', 'Water', 'Bedding'].slice(0, Math.floor(Math.random() * 4) + 1),
+          status: 'active'
+        };
+      });
+    },
+
+    generateMockRelief() {
+      const types = ['Medical Center', 'Food Distribution', 'Supply Center', 'Aid Station'];
+      const cities = ['Greater Noida', 'Noida', 'Ghaziabad', 'Delhi', 'Faridabad'];
+      
+      return Array.from({ length: 12 }, (_, i) => {
+        const coords = utils.getRandomCoordinates();
+        const type = types[Math.floor(Math.random() * types.length)];
+        const city = cities[Math.floor(Math.random() * cities.length)];
+        
+        return {
+          id: i + 1,
+          name: `${type} - ${city}`,
+          type: type,
+          contact: `+91 ${Math.floor(Math.random() * 9000000000) + 1000000000}`,
+          address: `Block ${String.fromCharCode(65 + Math.floor(Math.random() * 10))}, ${city}`,
+          latitude: coords.lat,
+          longitude: coords.lng,
+          city: city,
+          supplies: ['Water', 'Food', 'Medicine', 'Blankets', 'Clothing'].slice(0, Math.floor(Math.random() * 5) + 2),
+          status: 'operational'
+        };
+      });
+    },
+
+    generateMockSOS() {
+      const statuses = ['new', 'acknowledged', 'handled'];
+      const cities = ['Greater Noida', 'Noida', 'Ghaziabad', 'Delhi', 'Faridabad'];
+      const messages = [
+        'Need immediate medical assistance',
+        'Trapped in building, need rescue',
+        'Family missing, please help',
+        'Fire in residential area',
+        'Flooding, need evacuation'
+      ];
+      
+      return Array.from({ length: 18 }, (_, i) => {
+        const coords = utils.getRandomCoordinates();
+        const city = cities[Math.floor(Math.random() * cities.length)];
+        const message = messages[Math.floor(Math.random() * messages.length)];
+        
+        return {
+          id: i + 1,
+          message: message,
+          status: statuses[Math.floor(Math.random() * statuses.length)],
+          user_id: `user_${Math.floor(Math.random() * 50) + 1}`,
+          phone: `+91 ${Math.floor(Math.random() * 9000000000) + 1000000000}`,
+          latitude: coords.lat,
+          longitude: coords.lng,
+          city: city,
+          created_at: new Date(Date.now() - Math.random() * 3 * 24 * 60 * 60 * 1000).toISOString(),
+          priority: Math.random() > 0.7 ? 'high' : Math.random() > 0.4 ? 'medium' : 'low'
+        };
+      });
+    },
+
+    async loadAllData() {
+      try {
+        const [incidents, shelters, relief, sos] = await Promise.all([
+          this.fetchData('/incidents'),
+          this.fetchData('/shelters'),
+          this.fetchData('/relief'),
+          this.fetchData('/sos')
+        ]);
+        
+        state.incidents = incidents;
+        state.shelters = shelters;
+        state.relief = relief;
+        state.sosAlerts = sos;
+        
+        // Update pagination totals
+        state.pagination.incidents.total = incidents.length;
+        state.pagination.shelters.total = shelters.length;
+        state.pagination.relief.total = relief.length;
+        state.pagination.sos.total = sos.length;
+        
+        return { incidents, shelters, relief, sos };
+      } catch (error) {
+        console.error('Error loading data:', error);
+        UI.showToast('Error', 'Failed to load some data', 'error');
+        return { incidents: [], shelters: [], relief: [], sos: [] };
+      }
+    }
+  };
+
+  // Map Management
+  const MapManager = {
+    init() {
+      try {
+        state.map = L.map('mapContainer', {
+          zoomControl: true,
+          scrollWheelZoom: true,
+          doubleClickZoom: true
+        }).setView(CONFIG.MAP_CENTER, CONFIG.MAP_ZOOM);
+
+        // Add tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors',
+          maxZoom: 18,
+          minZoom: 3
+        }).addTo(state.map);
+
+        // Initialize layer groups
+        state.mapLayers = {
+          incidents: L.layerGroup().addTo(state.map),
+          shelters: L.layerGroup().addTo(state.map),
+          relief: L.layerGroup().addTo(state.map),
+          sos: L.layerGroup().addTo(state.map)
+        };
+
+        // Add controls
+        this.addCustomControls();
+        
+        return true;
+      } catch (error) {
+        console.error('Error initializing map:', error);
+        return false;
+      }
+    },
+
+    addCustomControls() {
+      // Zoom to all features control
+      const zoomAllControl = L.control({ position: 'topright' });
+      zoomAllControl.onAdd = () => {
+        const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+        container.innerHTML = '<a href="#" title="Zoom to all features"><i class="fas fa-expand-arrows-alt"></i></a>';
+        container.onclick = (e) => {
+          e.preventDefault();
+          this.zoomToAll();
+        };
+        return container;
+      };
+      zoomAllControl.addTo(state.map);
+    },
+
+    updateMarkers() {
+      // Clear existing markers
+      Object.values(state.mapLayers).forEach(layer => layer.clearLayers());
+
+      // Add incident markers
+      state.incidents.forEach(incident => {
+        if (incident.latitude && incident.longitude) {
+          const marker = L.circleMarker([incident.latitude, incident.longitude], {
+            radius: 8,
+            fillColor: this.getIncidentColor(incident.status),
+            color: '#fff',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.8
+          });
+
+          const popupContent = `
+            <div style="min-width: 200px;">
+              <h4 style="margin: 0 0 8px 0; color: #1f2937;">${utils.escapeHtml(incident.title)}</h4>
+              <p style="margin: 4px 0; font-size: 13px; color: #6b7280;">
+                <i class="fas fa-map-marker-alt"></i> ${utils.escapeHtml(incident.city)}
+              </p>
+              <p style="margin: 4px 0; font-size: 13px; color: #6b7280;">
+                <i class="fas fa-clock"></i> ${utils.formatDate(incident.created_at)}
+              </p>
+              <div style="margin-top: 8px;">
+                <span class="badge badge-${incident.status}" style="font-size: 11px;">
+                  ${incident.status.toUpperCase()}
+                </span>
+              </div>
+            </div>
+          `;
+
+          marker.bindPopup(popupContent);
+          state.mapLayers.incidents.addLayer(marker);
+        }
+      });
+
+      // Add shelter markers
+      state.shelters.forEach(shelter => {
+        if (shelter.latitude && shelter.longitude) {
+          const marker = L.marker([shelter.latitude, shelter.longitude], {
+            icon: L.divIcon({
+              html: '<i class="fas fa-home" style="color: #10b981;"></i>',
+              iconSize: [20, 20],
+              className: 'custom-div-icon'
+            })
+          });
+
+          const popupContent = `
+            <div style="min-width: 200px;">
+              <h4 style="margin: 0 0 8px 0; color: #1f2937;">${utils.escapeHtml(shelter.name)}</h4>
+              <p style="margin: 4px 0; font-size: 13px; color: #6b7280;">
+                <i class="fas fa-users"></i> ${shelter.occupied}/${shelter.capacity} occupied
+              </p>
+              <p style="margin: 4px 0; font-size: 13px; color: #6b7280;">
+                <i class="fas fa-phone"></i> ${shelter.contact}
+              </p>
+              <p style="margin: 4px 0; font-size: 13px; color: #6b7280;">
+                <i class="fas fa-map-marker-alt"></i> ${utils.escapeHtml(shelter.address)}
+              </p>
+            </div>
+          `;
+
+          marker.bindPopup(popupContent);
+          state.mapLayers.shelters.addLayer(marker);
+        }
+      });
+
+      // Add relief center markers
+      state.relief.forEach(center => {
+        if (center.latitude && center.longitude) {
+          const marker = L.marker([center.latitude, center.longitude], {
+            icon: L.divIcon({
+              html: '<i class="fas fa-hands-helping" style="color: #f59e0b;"></i>',
+              iconSize: [20, 20],
+              className: 'custom-div-icon'
+            })
+          });
+
+          const popupContent = `
+            <div style="min-width: 200px;">
+              <h4 style="margin: 0 0 8px 0; color: #1f2937;">${utils.escapeHtml(center.name)}</h4>
+              <p style="margin: 4px 0; font-size: 13px; color: #6b7280;">
+                <i class="fas fa-phone"></i> ${center.contact}
+              </p>
+              <p style="margin: 4px 0; font-size: 13px; color: #6b7280;">
+                <i class="fas fa-map-marker-alt"></i> ${utils.escapeHtml(center.address)}
+              </p>
+              <div style="margin-top: 8px;">
+                ${center.supplies.map(supply => 
+                  `<span style="display: inline-block; background: #f3f4f6; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-right: 4px;">${supply}</span>`
+                ).join('')}
+              </div>
+            </div>
+          `;
+
+          marker.bindPopup(popupContent);
+          state.mapLayers.relief.addLayer(marker);
+        }
+      });
+
+      // Add SOS markers
+      state.sosAlerts.forEach(sos => {
+        if (sos.latitude && sos.longitude && sos.status !== 'handled') {
+          const marker = L.circleMarker([sos.latitude, sos.longitude], {
+            radius: 10,
+            fillColor: this.getSOSColor(sos.priority),
+            color: '#fff',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.9
+          });
+
+          const popupContent = `
+            <div style="min-width: 200px;">
+              <h4 style="margin: 0 0 8px 0; color: #1f2937;">SOS Alert #${sos.id}</h4>
+              <p style="margin: 4px 0; font-size: 13px; color: #6b7280;">${utils.escapeHtml(sos.message)}</p>
+              <p style="margin: 4px 0; font-size: 13px; color: #6b7280;">
+                <i class="fas fa-phone"></i> ${sos.phone}
+              </p>
+              <p style="margin: 4px 0; font-size: 13px; color: #6b7280;">
+                <i class="fas fa-clock"></i> ${utils.formatDate(sos.created_at)}
+              </p>
+              <div style="margin-top: 8px;">
+                <span class="badge badge-${sos.status}" style="font-size: 11px;">
+                  ${sos.status.toUpperCase()}
+                </span>
+                <span class="badge" style="font-size: 11px; background: ${this.getSOSColor(sos.priority)}33; color: ${this.getSOSColor(sos.priority)}; margin-left: 4px;">
+                  ${sos.priority.toUpperCase()} PRIORITY
+                </span>
+              </div>
+            </div>
+          `;
+
+          marker.bindPopup(popupContent);
+          state.mapLayers.sos.addLayer(marker);
+        }
+      });
+    },
+
+    getIncidentColor(status) {
+      const colors = {
+        reported: '#f59e0b',
+        verified: '#3b82f6',
+        resolved: '#10b981'
+      };
+      return colors[status] || '#6b7280';
+    },
+
+    getSOSColor(priority) {
+      const colors = {
+        high: '#ef4444',
+        medium: '#f59e0b',
+        low: '#3b82f6'
+      };
+      return colors[priority] || '#6b7280';
+    },
+
+    zoomToAll() {
+      const allLayers = Object.values(state.mapLayers);
+      const group = new L.featureGroup(allLayers);
+      if (group.getBounds().isValid()) {
+        state.map.fitBounds(group.getBounds().pad(0.1));
+      } else {
+        state.map.setView(CONFIG.MAP_CENTER, CONFIG.MAP_ZOOM);
+      }
+    },
+
+    centerOnLocation(lat, lng, zoom = 14) {
+      if (state.map && lat && lng) {
+        state.map.setView([lat, lng], zoom, { animate: true });
+      }
+    }
+  };
+
+  // Section Renderers
+  const SectionRenderer = {
+    renderDashboard() {
+      const content = document.getElementById('mainContent');
+      
+      // Update page title
+      document.getElementById('pageTitle').textContent = 'Command Dashboard';
+      document.getElementById('pageSubtitle').textContent = 'Real-time disaster management and response coordination';
+      
+      content.innerHTML = `
+        <div class="content-grid">
+          <div style="display: flex; flex-direction: column; gap: var(--spacing);">
+            <!-- Stats Overview -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h2 class="card-title">Overview</h2>
+                  <p class="card-subtitle">Current situation summary</p>
+                </div>
+                <button class="btn" id="refreshDashboard">
+                  <i class="fas fa-sync-alt"></i>
+                  <span>Refresh</span>
+                </button>
+              </div>
+              <div class="stats-grid" id="statsGrid">
+                <!-- Stats will be populated here -->
+              </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 style="margin: 0; font-size: 20px; font-weight: 700;">Recent Activity</h3>
+                  <p class="card-subtitle">Latest incidents and alerts</p>
+                </div>
+              </div>
+              <div id="recentActivity">
+                <!-- Recent activity will be populated here -->
+              </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 style="margin: 0; font-size: 20px; font-weight: 700;">Quick Actions</h3>
+                  <p class="card-subtitle">Emergency response tools</p>
+                </div>
+              </div>
+              <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <button class="btn btn-danger" onclick="SectionRenderer.createIncident()">
+                  <i class="fas fa-exclamation-triangle"></i>
+                  <span>Report Incident</span>
+                </button>
+                <button class="btn btn-success" onclick="SectionRenderer.createShelter()">
+                  <i class="fas fa-home"></i>
+                  <span>Add Shelter</span>
+                </button>
+                <button class="btn btn-warning" onclick="SectionRenderer.createRelief()">
+                  <i class="fas fa-hands-helping"></i>
+                  <span>Setup Relief Center</span>
+                </button>
+                <button class="btn btn-primary" onclick="SectionRenderer.broadcastAlert()">
+                  <i class="fas fa-broadcast-tower"></i>
+                  <span>Broadcast Alert</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Map Panel -->
+          <div class="card" style="height: fit-content;">
+            <div class="card-header">
+              <div>
+                <h3 style="margin: 0; font-size: 20px; font-weight: 700;">Live Map</h3>
+                <p class="card-subtitle">Real-time locations and updates</p>
+              </div>
+              <div class="map-controls">
+                <button class="btn btn-sm" onclick="MapManager.zoomToAll()">
+                  <i class="fas fa-expand-arrows-alt"></i>
+                </button>
+              </div>
+            </div>
+            <div id="mapContainer" class="map-container"></div>
+            <div class="map-legend">
+              <div class="legend-item">
+                <div class="legend-dot" style="background: #f59e0b;"></div>
+                <span>Reported Incidents</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-dot" style="background: #3b82f6;"></div>
+                <span>Verified Incidents</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-dot" style="background: #10b981;"></div>
+                <span>Shelters</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-dot" style="background: #ef4444;"></div>
+                <span>SOS Alerts</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Initialize map after DOM is ready
+      setTimeout(() => {
+        if (MapManager.init()) {
+          this.updateDashboardStats();
+          this.updateRecentActivity();
+          MapManager.updateMarkers();
+        }
+      }, 100);
+
+      // Bind refresh button
+      document.getElementById('refreshDashboard')?.addEventListener('click', async () => {
+        await DataManager.loadAllData();
+        this.updateDashboardStats();
+        this.updateRecentActivity();
+        MapManager.updateMarkers();
+        UI.showToast('Success', 'Dashboard refreshed', 'success');
+      });
+    },
+
+    updateDashboardStats() {
+      const statsGrid = document.getElementById('statsGrid');
+      if (!statsGrid) return;
+
+      const stats = [
+        {
+          value: state.incidents.length,
+          label: 'Total Incidents',
+          change: '+5 today',
+          changeType: 'positive',
+          icon: 'fas fa-exclamation-triangle',
+          color: 'var(--warning)'
+        },
+        {
+          value: state.sosAlerts.filter(s => s.status === 'new').length,
+          label: 'Active SOS',
+          change: `${state.sosAlerts.filter(s => s.status === 'handled').length} handled`,
+          changeType: 'positive',
+          icon: 'fas fa-phone-alt',
+          color: 'var(--danger)'
+        },
+        {
+          value: state.shelters.length,
+          label: 'Shelters Available',
+          change: `${state.shelters.reduce((sum, s) => sum + (s.available || 0), 0)} spaces`,
+          changeType: 'neutral',
+          icon: 'fas fa-home',
+          color: 'var(--success)'
+        },
+        {
+          value: state.relief.length,
+          label: 'Relief Centers',
+          change: 'All operational',
+          changeType: 'positive',
+          icon: 'fas fa-hands-helping',
+          color: 'var(--primary)'
+        }
+      ];
+
+      statsGrid.innerHTML = stats.map(stat => `
+        <div class="stat-card">
+          <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+            <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: ${stat.color}22; display: flex; align-items: center; justify-content: center; color: ${stat.color};">
+              <i class="${stat.icon}"></i>
+            </div>
+            <div style="flex: 1;">
+              <div class="stat-value">${stat.value}</div>
+              <div class="stat-label">${stat.label}</div>
+            </div>
+          </div>
+          <div class="stat-change ${stat.changeType}">
+            <i class="fas fa-${stat.changeType === 'positive' ? 'arrow-up' : stat.changeType === 'negative' ? 'arrow-down' : 'minus'}"></i>
+            <span>${stat.change}</span>
+          </div>
+        </div>
+      `).join('');
+    },
+
+    updateRecentActivity() {
+      const recentActivity = document.getElementById('recentActivity');
+      if (!recentActivity) return;
+
+      // Combine recent incidents and SOS alerts
+      const recentIncidents = state.incidents
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 3);
+      
+      const recentSOS = state.sosAlerts
+        .filter(s => s.status === 'new')
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        .slice(0, 2);
+
+      const activities = [
+        ...recentIncidents.map(i => ({ ...i, type: 'incident' })),
+        ...recentSOS.map(s => ({ ...s, type: 'sos' }))
+      ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+      if (activities.length === 0) {
+        recentActivity.innerHTML = `
+          <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+            <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+            <p>No recent activity</p>
+          </div>
+        `;
+        return;
+      }
+
+      recentActivity.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          ${activities.slice(0, 5).map(activity => {
+            const isIncident = activity.type === 'incident';
+            const icon = isIncident ? 'fas fa-exclamation-triangle' : 'fas fa-phone-alt';
+            const color = isIncident ? 'var(--warning)' : 'var(--danger)';
+            const title = isIncident ? activity.title : `SOS Alert #${activity.id}`;
+            const description = isIncident ? activity.description : activity.message;
+            
+            return `
+              <div style="display: flex; align-items: center; gap: 16px; padding: 16px; background: rgba(255, 255, 255, 0.02); border-radius: var(--radius-lg); border-left: 4px solid ${color};">
+                <div style="width: 40px; height: 40px; border-radius: var(--radius-md); background: ${color}22; display: flex; align-items: center; justify-content: center; color: ${color};">
+                  <i class="${icon}"></i>
+                </div>
+                <div style="flex: 1;">
+                  <h4 style="margin: 0 0 4px 0; font-size: 15px; font-weight: 600;">${utils.escapeHtml(title)}</h4>
+                  <p style="margin: 0 0 4px 0; font-size: 13px; color: var(--text-muted);">${utils.escapeHtml(description?.substring(0, 80) || '')}${description?.length > 80 ? '...' : ''}</p>
+                  <div style="display: flex; align-items: center; gap: 12px; font-size: 12px; color: var(--text-faded);">
+                    <span><i class="fas fa-clock"></i> ${utils.formatDate(activity.created_at)}</span>
+                    <span><i class="fas fa-map-marker-alt"></i> ${activity.city}</span>
+                  </div>
+                </div>
+                <div>
+                  ${UI.createBadge(activity.status, activity.status).outerHTML}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    },
+
+    renderIncidents() {
+      const content = document.getElementById('mainContent');
+      
+      document.getElementById('pageTitle').textContent = 'Incident Management';
+      document.getElementById('pageSubtitle').textContent = 'Monitor and respond to emergency incidents';
+
+      content.innerHTML = `
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Incidents</h2>
+              <p class="card-subtitle">Manage emergency incidents and responses</p>
+            </div>
+            <button class="btn btn-primary" onclick="SectionRenderer.createIncident()">
+              <i class="fas fa-plus"></i>
+              <span>Report Incident</span>
+            </button>
+          </div>
+
+          <div class="filters">
+            <div class="filter-item">
+              <input type="text" class="form-input" id="incidentSearch" placeholder="Search incidents..." />
+            </div>
+            <div class="filter-item">
+              <select class="form-select" id="incidentStatusFilter">
+                <option value="">All Statuses</option>
+                <option value="reported">Reported</option>
+                <option value="verified">Verified</option>
+                <option value="resolved">Resolved</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <select class="form-select" id="incidentCityFilter">
+                <option value="">All Cities</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Title</th>
+                  <th>City</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="incidentsTableBody">
+                <!-- Table content will be populated here -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination">
+            <div class="pagination-info" id="incidentsPaginationInfo"></div>
+            <div class="pagination-controls">
+              <button class="btn btn-sm" id="incidentsPrevPage">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              <button class="btn btn-sm" id="incidentsNextPage">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+              <select class="form-select" id="incidentsPerPage" style="width: auto; margin-left: 12px;">
+                <option value="10">10 per page</option>
+                <option value="25">25 per page</option>
+                <option value="50">50 per page</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      `;
+
+      this.bindIncidentFilters();
+      this.bindIncidentPagination();
+      this.populateIncidentFilters();
+      this.renderIncidentTable();
+    },
+
+    bindIncidentFilters() {
+      const searchInput = document.getElementById('incidentSearch');
+      const statusFilter = document.getElementById('incidentStatusFilter');
+      const cityFilter = document.getElementById('incidentCityFilter');
+
+      const applyFilters = utils.debounce(() => {
+        state.pagination.incidents.page = 1;
+        state.pagination.incidents.filters = {
+          search: searchInput.value.toLowerCase(),
+          status: statusFilter.value,
+          city: cityFilter.value
+        };
+        this.renderIncidentTable();
+      }, 300);
+
+      searchInput?.addEventListener('input', applyFilters);
+      statusFilter?.addEventListener('change', applyFilters);
+      cityFilter?.addEventListener('change', applyFilters);
+    },
+
+    bindIncidentPagination() {
+      const prevBtn = document.getElementById('incidentsPrevPage');
+      const nextBtn = document.getElementById('incidentsNextPage');
+      const perPageSelect = document.getElementById('incidentsPerPage');
+
+      prevBtn?.addEventListener('click', () => {
+        if (state.pagination.incidents.page > 1) {
+          state.pagination.incidents.page--;
+          this.renderIncidentTable();
+        }
+      });
+
+      nextBtn?.addEventListener('click', () => {
+        const maxPages = Math.ceil(this.getFilteredIncidents().length / CONFIG.ITEMS_PER_PAGE);
+        if (state.pagination.incidents.page < maxPages) {
+          state.pagination.incidents.page++;
+          this.renderIncidentTable();
+        }
+      });
+
+      perPageSelect?.addEventListener('change', (e) => {
+        CONFIG.ITEMS_PER_PAGE = parseInt(e.target.value);
+        state.pagination.incidents.page = 1;
+        this.renderIncidentTable();
+      });
+    },
+
+    populateIncidentFilters() {
+      const cityFilter = document.getElementById('incidentCityFilter');
+      if (!cityFilter) return;
+
+      const cities = [...new Set(state.incidents.map(i => i.city).filter(Boolean))].sort();
+      cityFilter.innerHTML = '<option value="">All Cities</option>' + 
+        cities.map(city => `<option value="${city}">${city}</option>`).join('');
+    },
+
+    getFilteredIncidents() {
+      const filters = state.pagination.incidents.filters || {};
+      return state.incidents.filter(incident => {
+        const matchesSearch = !filters.search || 
+          incident.title?.toLowerCase().includes(filters.search) ||
+          incident.description?.toLowerCase().includes(filters.search) ||
+          incident.city?.toLowerCase().includes(filters.search);
+        
+        const matchesStatus = !filters.status || incident.status === filters.status;
+        const matchesCity = !filters.city || incident.city === filters.city;
+        
+        return matchesSearch && matchesStatus && matchesCity;
+      });
+    },
+
+    renderIncidentTable() {
+      const tableBody = document.getElementById('incidentsTableBody');
+      const paginationInfo = document.getElementById('incidentsPaginationInfo');
+      
+      if (!tableBody) return;
+
+      const filteredIncidents = this.getFilteredIncidents();
+      const startIndex = (state.pagination.incidents.page - 1) * CONFIG.ITEMS_PER_PAGE;
+      const endIndex = startIndex + CONFIG.ITEMS_PER_PAGE;
+      const pageIncidents = filteredIncidents.slice(startIndex, endIndex);
+
+      if (pageIncidents.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
+              <i class="fas fa-search" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+              <p>No incidents found</p>
+            </td>
+          </tr>
+        `;
+      } else {
+        tableBody.innerHTML = pageIncidents.map(incident => `
+          <tr>
+            <td style="font-weight: 600;">#${incident.id}</td>
+            <td>
+              <div style="font-weight: 600; margin-bottom: 4px;">${utils.escapeHtml(incident.title)}</div>
+              <div style="font-size: 12px; color: var(--text-muted); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                ${utils.escapeHtml(incident.description)}
+              </div>
+            </td>
+            <td>
+              <span class="city-tag">${incident.city}</span>
+            </td>
+            <td>${UI.createBadge(incident.status, incident.status).outerHTML}</td>
+            <td style="font-size: 13px; color: var(--text-muted);">
+              ${utils.formatDate(incident.created_at)}
+            </td>
+            <td>
+              <div class="action-buttons">
+                ${incident.status === 'reported' ? `
+                  <button class="btn btn-sm btn-success" onclick="IncidentActions.updateStatus(${incident.id}, 'verified')" title="Verify">
+                    <i class="fas fa-check"></i>
+                  </button>
+                ` : ''}
+                ${incident.status !== 'resolved' ? `
+                  <button class="btn btn-sm btn-primary" onclick="IncidentActions.updateStatus(${incident.id}, 'resolved')" title="Resolve">
+                    <i class="fas fa-flag-checkered"></i>
+                  </button>
+                ` : ''}
+                <button class="btn btn-sm" onclick="IncidentActions.centerOnMap(${incident.id})" title="Show on Map">
+                  <i class="fas fa-map-marker-alt"></i>
+                </button>
+                <button class="btn btn-sm" onclick="IncidentActions.showDetails(${incident.id})" title="View Details">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // Update pagination info
+      const totalPages = Math.ceil(filteredIncidents.length / CONFIG.ITEMS_PER_PAGE);
+      paginationInfo.textContent = `Showing ${startIndex + 1}-${Math.min(endIndex, filteredIncidents.length)} of ${filteredIncidents.length} incidents`;
+      
+      // Update pagination buttons
+      const prevBtn = document.getElementById('incidentsPrevPage');
+      const nextBtn = document.getElementById('incidentsNextPage');
+      
+      if (prevBtn) prevBtn.disabled = state.pagination.incidents.page <= 1;
+      if (nextBtn) nextBtn.disabled = state.pagination.incidents.page >= totalPages;
+    },
+
+    renderSOS() {
+      const content = document.getElementById('mainContent');
+      
+      document.getElementById('pageTitle').textContent = 'SOS Management';
+      document.getElementById('pageSubtitle').textContent = 'Monitor and respond to emergency SOS alerts';
+
+      content.innerHTML = `
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">SOS Alerts</h2>
+              <p class="card-subtitle">Emergency assistance requests requiring immediate attention</p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-warning" onclick="SOSActions.markAllAcknowledged()">
+                <i class="fas fa-check-double"></i>
+                <span>Acknowledge All</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="filters">
+            <div class="filter-item">
+              <input type="text" class="form-input" id="sosSearch" placeholder="Search SOS alerts..." />
+            </div>
+            <div class="filter-item">
+              <select class="form-select" id="sosStatusFilter">
+                <option value="">All Statuses</option>
+                <option value="new">New</option>
+                <option value="acknowledged">Acknowledged</option>
+                <option value="handled">Handled</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <select class="form-select" id="sosPriorityFilter">
+                <option value="">All Priorities</option>
+                <option value="high">High Priority</option>
+                <option value="medium">Medium Priority</option>
+                <option value="low">Low Priority</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Message</th>
+                  <th>Priority</th>
+                  <th>City</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="sosTableBody">
+                <!-- Table content will be populated here -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination">
+            <div class="pagination-info" id="sosPaginationInfo"></div>
+            <div class="pagination-controls">
+              <button class="btn btn-sm" id="sosPrevPage">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              <button class="btn btn-sm" id="sosNextPage">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      this.bindSOSFilters();
+      this.bindSOSPagination();
+      this.renderSOSTable();
+    },
+
+    bindSOSFilters() {
+      const searchInput = document.getElementById('sosSearch');
+      const statusFilter = document.getElementById('sosStatusFilter');
+      const priorityFilter = document.getElementById('sosPriorityFilter');
+
+      const applyFilters = utils.debounce(() => {
+        state.pagination.sos.page = 1;
+        state.pagination.sos.filters = {
+          search: searchInput.value.toLowerCase(),
+          status: statusFilter.value,
+          priority: priorityFilter.value
+        };
+        this.renderSOSTable();
+      }, 300);
+
+      searchInput?.addEventListener('input', applyFilters);
+      statusFilter?.addEventListener('change', applyFilters);
+      priorityFilter?.addEventListener('change', applyFilters);
+    },
+
+    bindSOSPagination() {
+      const prevBtn = document.getElementById('sosPrevPage');
+      const nextBtn = document.getElementById('sosNextPage');
+
+      prevBtn?.addEventListener('click', () => {
+        if (state.pagination.sos.page > 1) {
+          state.pagination.sos.page--;
+          this.renderSOSTable();
+        }
+      });
+
+      nextBtn?.addEventListener('click', () => {
+        const maxPages = Math.ceil(this.getFilteredSOS().length / CONFIG.ITEMS_PER_PAGE);
+        if (state.pagination.sos.page < maxPages) {
+          state.pagination.sos.page++;
+          this.renderSOSTable();
+        }
+      });
+    },
+
+    getFilteredSOS() {
+      const filters = state.pagination.sos.filters || {};
+      return state.sosAlerts.filter(sos => {
+        const matchesSearch = !filters.search || 
+          sos.message?.toLowerCase().includes(filters.search) ||
+          sos.phone?.includes(filters.search) ||
+          sos.city?.toLowerCase().includes(filters.search);
+        
+        const matchesStatus = !filters.status || sos.status === filters.status;
+        const matchesPriority = !filters.priority || sos.priority === filters.priority;
+        
+        return matchesSearch && matchesStatus && matchesPriority;
+      });
+    },
+
+    renderSOSTable() {
+      const tableBody = document.getElementById('sosTableBody');
+      const paginationInfo = document.getElementById('sosPaginationInfo');
+      
+      if (!tableBody) return;
+
+      const filteredSOS = this.getFilteredSOS();
+      const startIndex = (state.pagination.sos.page - 1) * CONFIG.ITEMS_PER_PAGE;
+      const endIndex = startIndex + CONFIG.ITEMS_PER_PAGE;
+      const pageSOS = filteredSOS.slice(startIndex, endIndex);
+
+      if (pageSOS.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">
+              <i class="fas fa-phone-slash" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+              <p>No SOS alerts found</p>
+            </td>
+          </tr>
+        `;
+      } else {
+        tableBody.innerHTML = pageSOS.map(sos => `
+          <tr style="${sos.priority === 'high' ? 'background: rgba(239, 68, 68, 0.05);' : ''}">
+            <td style="font-weight: 600;">#${sos.id}</td>
+            <td>
+              <div style="max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 4px;">
+                ${utils.escapeHtml(sos.message)}
+              </div>
+              <div style="font-size: 12px; color: var(--text-muted);">
+                <i class="fas fa-phone"></i> ${sos.phone}
+              </div>
+            </td>
+            <td>
+              <span class="badge" style="background: ${MapManager.getSOSColor(sos.priority)}22; color: ${MapManager.getSOSColor(sos.priority)}; border: 1px solid ${MapManager.getSOSColor(sos.priority)};">
+                ${sos.priority.toUpperCase()}
+              </span>
+            </td>
+            <td>
+              <span class="city-tag">${sos.city}</span>
+            </td>
+            <td>${UI.createBadge(sos.status, sos.status).outerHTML}</td>
+            <td style="font-size: 13px; color: var(--text-muted);">
+              ${utils.formatDate(sos.created_at)}
+            </td>
+            <td>
+              <div class="action-buttons">
+                ${sos.status === 'new' ? `
+                  <button class="btn btn-sm btn-primary" onclick="SOSActions.updateStatus(${sos.id}, 'acknowledged')" title="Acknowledge">
+                    <i class="fas fa-check"></i>
+                  </button>
+                ` : ''}
+                ${sos.status !== 'handled' ? `
+                  <button class="btn btn-sm btn-success" onclick="SOSActions.updateStatus(${sos.id}, 'handled')" title="Mark as Handled">
+                    <i class="fas fa-check-double"></i>
+                  </button>
+                ` : ''}
+                <button class="btn btn-sm" onclick="SOSActions.centerOnMap(${sos.id})" title="Show on Map">
+                  <i class="fas fa-map-marker-alt"></i>
+                </button>
+                <button class="btn btn-sm btn-warning" onclick="SOSActions.callUser('${sos.phone}')" title="Call User">
+                  <i class="fas fa-phone"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // Update pagination info
+      const totalPages = Math.ceil(filteredSOS.length / CONFIG.ITEMS_PER_PAGE);
+      paginationInfo.textContent = `Showing ${startIndex + 1}-${Math.min(endIndex, filteredSOS.length)} of ${filteredSOS.length} alerts`;
+      
+      // Update pagination buttons
+      const prevBtn = document.getElementById('sosPrevPage');
+      const nextBtn = document.getElementById('sosNextPage');
+      
+      if (prevBtn) prevBtn.disabled = state.pagination.sos.page <= 1;
+      if (nextBtn) nextBtn.disabled = state.pagination.sos.page >= totalPages;
+    },
+
+    renderShelters() {
+      const content = document.getElementById('mainContent');
+      
+      document.getElementById('pageTitle').textContent = 'Shelter Management';
+      document.getElementById('pageSubtitle').textContent = 'Manage emergency shelters and capacity';
+
+      content.innerHTML = `
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Emergency Shelters</h2>
+              <p class="card-subtitle">Monitor shelter capacity and manage emergency housing</p>
+            </div>
+            <button class="btn btn-primary" onclick="SectionRenderer.createShelter()">
+              <i class="fas fa-plus"></i>
+              <span>Add Shelter</span>
+            </button>
+          </div>
+
+          <div class="filters">
+            <div class="filter-item">
+              <input type="text" class="form-input" id="shelterSearch" placeholder="Search shelters..." />
+            </div>
+            <div class="filter-item">
+              <select class="form-select" id="shelterCityFilter">
+                <option value="">All Cities</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <select class="form-select" id="shelterAvailabilityFilter">
+                <option value="">All Shelters</option>
+                <option value="available">Available</option>
+                <option value="full">At Capacity</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>City</th>
+                  <th>Capacity</th>
+                  <th>Occupancy</th>
+                  <th>Contact</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="sheltersTableBody">
+                <!-- Table content will be populated here -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination">
+            <div class="pagination-info" id="sheltersPaginationInfo"></div>
+            <div class="pagination-controls">
+              <button class="btn btn-sm" id="sheltersPrevPage">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              <button class="btn btn-sm" id="sheltersNextPage">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      this.bindShelterFilters();
+      this.bindShelterPagination();
+      this.populateShelterFilters();
+      this.renderShelterTable();
+    },
+
+    bindShelterFilters() {
+      const searchInput = document.getElementById('shelterSearch');
+      const cityFilter = document.getElementById('shelterCityFilter');
+      const availabilityFilter = document.getElementById('shelterAvailabilityFilter');
+
+      const applyFilters = utils.debounce(() => {
+        state.pagination.shelters.page = 1;
+        state.pagination.shelters.filters = {
+          search: searchInput.value.toLowerCase(),
+          city: cityFilter.value,
+          availability: availabilityFilter.value
+        };
+        this.renderShelterTable();
+      }, 300);
+
+      searchInput?.addEventListener('input', applyFilters);
+      cityFilter?.addEventListener('change', applyFilters);
+      availabilityFilter?.addEventListener('change', applyFilters);
+    },
+
+    bindShelterPagination() {
+      const prevBtn = document.getElementById('sheltersPrevPage');
+      const nextBtn = document.getElementById('sheltersNextPage');
+
+      prevBtn?.addEventListener('click', () => {
+        if (state.pagination.shelters.page > 1) {
+          state.pagination.shelters.page--;
+          this.renderShelterTable();
+        }
+      });
+
+      nextBtn?.addEventListener('click', () => {
+        const maxPages = Math.ceil(this.getFilteredShelters().length / CONFIG.ITEMS_PER_PAGE);
+        if (state.pagination.shelters.page < maxPages) {
+          state.pagination.shelters.page++;
+          this.renderShelterTable();
+        }
+      });
+    },
+
+    populateShelterFilters() {
+      const cityFilter = document.getElementById('shelterCityFilter');
+      if (!cityFilter) return;
+
+      const cities = [...new Set(state.shelters.map(s => s.city).filter(Boolean))].sort();
+      cityFilter.innerHTML = '<option value="">All Cities</option>' + 
+        cities.map(city => `<option value="${city}">${city}</option>`).join('');
+    },
+
+    getFilteredShelters() {
+      const filters = state.pagination.shelters.filters || {};
+      return state.shelters.filter(shelter => {
+        const matchesSearch = !filters.search || 
+          shelter.name?.toLowerCase().includes(filters.search) ||
+          shelter.address?.toLowerCase().includes(filters.search) ||
+          shelter.contact?.includes(filters.search);
+        
+        const matchesCity = !filters.city || shelter.city === filters.city;
+        
+        const matchesAvailability = !filters.availability || 
+          (filters.availability === 'available' && shelter.available > 0) ||
+          (filters.availability === 'full' && shelter.available <= 0);
+        
+        return matchesSearch && matchesCity && matchesAvailability;
+      });
+    },
+
+    renderShelterTable() {
+      const tableBody = document.getElementById('sheltersTableBody');
+      const paginationInfo = document.getElementById('sheltersPaginationInfo');
+      
+      if (!tableBody) return;
+
+      const filteredShelters = this.getFilteredShelters();
+      const startIndex = (state.pagination.shelters.page - 1) * CONFIG.ITEMS_PER_PAGE;
+      const endIndex = startIndex + CONFIG.ITEMS_PER_PAGE;
+      const pageShelters = filteredShelters.slice(startIndex, endIndex);
+
+      if (pageShelters.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">
+              <i class="fas fa-home" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+              <p>No shelters found</p>
+            </td>
+          </tr>
+        `;
+      } else {
+        tableBody.innerHTML = pageShelters.map(shelter => {
+          const occupancyPercent = Math.round((shelter.occupied / shelter.capacity) * 100);
+          const isNearFull = occupancyPercent > 80;
+          const isFull = occupancyPercent >= 100;
+          
+          return `
+            <tr>
+              <td style="font-weight: 600;">#${shelter.id}</td>
+              <td>
+                <div style="font-weight: 600; margin-bottom: 4px;">${utils.escapeHtml(shelter.name)}</div>
+                <div style="font-size: 12px; color: var(--text-muted);">
+                  ${utils.escapeHtml(shelter.address)}
+                </div>
+              </td>
+              <td>
+                <span class="city-tag">${shelter.city}</span>
+              </td>
+              <td style="text-align: center; font-weight: 600;">
+                ${shelter.capacity}
+              </td>
+              <td>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <div style="flex: 1; background: rgba(255,255,255,0.1); height: 8px; border-radius: 4px; overflow: hidden;">
+                    <div style="width: ${occupancyPercent}%; height: 100%; background: ${isFull ? 'var(--danger)' : isNearFull ? 'var(--warning)' : 'var(--success)'}; transition: width 0.3s ease;"></div>
+                  </div>
+                  <span style="font-size: 13px; font-weight: 600; min-width: 60px; color: ${isFull ? 'var(--danger)' : isNearFull ? 'var(--warning)' : 'var(--success)'};">
+                    ${shelter.occupied}/${shelter.capacity}
+                  </span>
+                </div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">
+                  ${shelter.available} available
+                </div>
+              </td>
+              <td style="font-size: 13px;">
+                <i class="fas fa-phone" style="color: var(--text-muted);"></i>
+                ${shelter.contact}
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn btn-sm" onclick="ShelterActions.centerOnMap(${shelter.id})" title="Show on Map">
+                    <i class="fas fa-map-marker-alt"></i>
+                  </button>
+                  <button class="btn btn-sm btn-primary" onclick="ShelterActions.editShelter(${shelter.id})" title="Edit">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="btn btn-sm btn-warning" onclick="ShelterActions.callShelter('${shelter.contact}')" title="Call">
+                    <i class="fas fa-phone"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      // Update pagination info
+      const totalPages = Math.ceil(filteredShelters.length / CONFIG.ITEMS_PER_PAGE);
+      paginationInfo.textContent = `Showing ${startIndex + 1}-${Math.min(endIndex, filteredShelters.length)} of ${filteredShelters.length} shelters`;
+      
+      // Update pagination buttons
+      const prevBtn = document.getElementById('sheltersPrevPage');
+      const nextBtn = document.getElementById('sheltersNextPage');
+      
+      if (prevBtn) prevBtn.disabled = state.pagination.shelters.page <= 1;
+      if (nextBtn) nextBtn.disabled = state.pagination.shelters.page >= totalPages;
+    },
+
+    renderRelief() {
+      const content = document.getElementById('mainContent');
+      
+      document.getElementById('pageTitle').textContent = 'Relief Management';
+      document.getElementById('pageSubtitle').textContent = 'Coordinate relief centers and supply distribution';
+
+      content.innerHTML = `
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Relief Centers</h2>
+              <p class="card-subtitle">Manage relief distribution points and emergency supplies</p>
+            </div>
+            <button class="btn btn-primary" onclick="SectionRenderer.createRelief()">
+              <i class="fas fa-plus"></i>
+              <span>Add Relief Center</span>
+            </button>
+          </div>
+
+          <div class="filters">
+            <div class="filter-item">
+              <input type="text" class="form-input" id="reliefSearch" placeholder="Search relief centers..." />
+            </div>
+            <div class="filter-item">
+              <select class="form-select" id="reliefCityFilter">
+                <option value="">All Cities</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <select class="form-select" id="reliefTypeFilter">
+                <option value="">All Types</option>
+                <option value="Medical Center">Medical Center</option>
+                <option value="Food Distribution">Food Distribution</option>
+                <option value="Supply Center">Supply Center</option>
+                <option value="Aid Station">Aid Station</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Type</th>
+                  <th>City</th>
+                  <th>Supplies</th>
+                  <th>Contact</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="reliefTableBody">
+                <!-- Table content will be populated here -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination">
+            <div class="pagination-info" id="reliefPaginationInfo"></div>
+            <div class="pagination-controls">
+              <button class="btn btn-sm" id="reliefPrevPage">
+                <i class="fas fa-chevron-left"></i>
+              </button>
+              <button class="btn btn-sm" id="reliefNextPage">
+                <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      this.bindReliefFilters();
+      this.bindReliefPagination();
+      this.populateReliefFilters();
+      this.renderReliefTable();
+    },
+
+    bindReliefFilters() {
+      const searchInput = document.getElementById('reliefSearch');
+      const cityFilter = document.getElementById('reliefCityFilter');
+      const typeFilter = document.getElementById('reliefTypeFilter');
+
+      const applyFilters = utils.debounce(() => {
+        state.pagination.relief.page = 1;
+        state.pagination.relief.filters = {
+          search: searchInput.value.toLowerCase(),
+          city: cityFilter.value,
+          type: typeFilter.value
+        };
+        this.renderReliefTable();
+      }, 300);
+
+      searchInput?.addEventListener('input', applyFilters);
+      cityFilter?.addEventListener('change', applyFilters);
+      typeFilter?.addEventListener('change', applyFilters);
+    },
+
+    bindReliefPagination() {
+      const prevBtn = document.getElementById('reliefPrevPage');
+      const nextBtn = document.getElementById('reliefNextPage');
+
+      prevBtn?.addEventListener('click', () => {
+        if (state.pagination.relief.page > 1) {
+          state.pagination.relief.page--;
+          this.renderReliefTable();
+        }
+      });
+
+      nextBtn?.addEventListener('click', () => {
+        const maxPages = Math.ceil(this.getFilteredRelief().length / CONFIG.ITEMS_PER_PAGE);
+        if (state.pagination.relief.page < maxPages) {
+          state.pagination.relief.page++;
+          this.renderReliefTable();
+        }
+      });
+    },
+
+    populateReliefFilters() {
+      const cityFilter = document.getElementById('reliefCityFilter');
+      if (!cityFilter) return;
+
+      const cities = [...new Set(state.relief.map(r => r.city).filter(Boolean))].sort();
+      cityFilter.innerHTML = '<option value="">All Cities</option>' + 
+        cities.map(city => `<option value="${city}">${city}</option>`).join('');
+    },
+
+    getFilteredRelief() {
+      const filters = state.pagination.relief.filters || {};
+      return state.relief.filter(center => {
+        const matchesSearch = !filters.search || 
+          center.name?.toLowerCase().includes(filters.search) ||
+          center.address?.toLowerCase().includes(filters.search) ||
+          center.contact?.includes(filters.search);
+        
+        const matchesCity = !filters.city || center.city === filters.city;
+        const matchesType = !filters.type || center.type === filters.type;
+        
+        return matchesSearch && matchesCity && matchesType;
+      });
+    },
+
+    renderReliefTable() {
+      const tableBody = document.getElementById('reliefTableBody');
+      const paginationInfo = document.getElementById('reliefPaginationInfo');
+      
+      if (!tableBody) return;
+
+      const filteredRelief = this.getFilteredRelief();
+      const startIndex = (state.pagination.relief.page - 1) * CONFIG.ITEMS_PER_PAGE;
+      const endIndex = startIndex + CONFIG.ITEMS_PER_PAGE;
+      const pageRelief = filteredRelief.slice(startIndex, endIndex);
+
+      if (pageRelief.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">
+              <i class="fas fa-hands-helping" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+              <p>No relief centers found</p>
+            </td>
+          </tr>
+        `;
+      } else {
+        tableBody.innerHTML = pageRelief.map(center => `
+          <tr>
+            <td style="font-weight: 600;">#${center.id}</td>
+            <td>
+              <div style="font-weight: 600; margin-bottom: 4px;">${utils.escapeHtml(center.name)}</div>
+              <div style="font-size: 12px; color: var(--text-muted);">
+                ${utils.escapeHtml(center.address)}
+              </div>
+            </td>
+            <td>
+              <span class="badge" style="background: var(--warning)22; color: var(--warning); border: 1px solid var(--warning);">
+                ${center.type}
+              </span>
+            </td>
+            <td>
+              <span class="city-tag">${center.city}</span>
+            </td>
+            <td>
+              <div style="display: flex; flex-wrap: wrap; gap: 4px; max-width: 200px;">
+                ${center.supplies.slice(0, 3).map(supply => 
+                  `<span style="display: inline-block; background: var(--primary)22; color: var(--primary); padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 600;">${supply}</span>`
+                ).join('')}
+                ${center.supplies.length > 3 ? `<span style="font-size: 11px; color: var(--text-muted);">+${center.supplies.length - 3} more</span>` : ''}
+              </div>
+            </td>
+            <td style="font-size: 13px;">
+              <i class="fas fa-phone" style="color: var(--text-muted);"></i>
+              ${center.contact}
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn btn-sm" onclick="ReliefActions.centerOnMap(${center.id})" title="Show on Map">
+                  <i class="fas fa-map-marker-alt"></i>
+                </button>
+                <button class="btn btn-sm btn-primary" onclick="ReliefActions.editRelief(${center.id})" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-success" onclick="ReliefActions.manageSupplies(${center.id})" title="Manage Supplies">
+                  <i class="fas fa-boxes"></i>
+                </button>
+                <button class="btn btn-sm btn-warning" onclick="ReliefActions.callCenter('${center.contact}')" title="Call">
+                  <i class="fas fa-phone"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // Update pagination info
+      const totalPages = Math.ceil(filteredRelief.length / CONFIG.ITEMS_PER_PAGE);
+      paginationInfo.textContent = `Showing ${startIndex + 1}-${Math.min(endIndex, filteredRelief.length)} of ${filteredRelief.length} centers`;
+      
+      // Update pagination buttons
+      const prevBtn = document.getElementById('reliefPrevPage');
+      const nextBtn = document.getElementById('reliefNextPage');
+      
+      if (prevBtn) prevBtn.disabled = state.pagination.relief.page <= 1;
+      if (nextBtn) nextBtn.disabled = state.pagination.relief.page >= totalPages;
+    },
+
+    // Form Modal Renderers
+    createIncident() {
+      const modalContent = `
+        <form id="incidentForm" style="display: flex; flex-direction: column; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label">Incident Title *</label>
+            <input type="text" class="form-input" id="incidentTitle" required placeholder="e.g., Fire Emergency in Sector 15">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Description *</label>
+            <textarea class="form-textarea" id="incidentDescription" required placeholder="Detailed description of the incident..."></textarea>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label class="form-label">City *</label>
+              <select class="form-select" id="incidentCity" required>
+                <option value="">Select City</option>
+                <option value="Greater Noida">Greater Noida</option>
+                <option value="Noida">Noida</option>
+                <option value="Ghaziabad">Ghaziabad</option>
+                <option value="Delhi">Delhi</option>
+                <option value="Faridabad">Faridabad</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Priority</label>
+              <select class="form-select" id="incidentPriority">
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label class="form-label">Latitude</label>
+              <input type="number" class="form-input" id="incidentLat" step="any" placeholder="28.6139">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Longitude</label>
+              <input type="number" class="form-input" id="incidentLng" step="any" placeholder="77.2090">
+            </div>
+          </div>
+          
+          <div style="display: flex; gap: 8px; justify-content: center; padding: 8px; background: rgba(59, 130, 246, 0.1); border-radius: var(--radius-lg);">
+            <i class="fas fa-info-circle" style="color: var(--primary);"></i>
+            <span style="font-size: 13px; color: var(--text-muted);">Leave coordinates empty to auto-generate random location</span>
+          </div>
+        </form>
+      `;
+
+      const modalFooter = `
+        <button type="button" class="btn" onclick="UI.hideModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" form="incidentForm">Create Incident</button>
+      `;
+
+      UI.showModal('Report New Incident', modalContent, modalFooter);
+
+      // Bind form submission
+      document.getElementById('incidentForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await this.handleIncidentSubmission();
+      });
+    },
+
+    async handleIncidentSubmission() {
+      const title = document.getElementById('incidentTitle').value.trim();
+      const description = document.getElementById('incidentDescription').value.trim();
+      const city = document.getElementById('incidentCity').value;
+      const priority = document.getElementById('incidentPriority').value;
+      let lat = document.getElementById('incidentLat').value;
+      let lng = document.getElementById('incidentLng').value;
+
+      if (!title || !description || !city) {
+        UI.showToast('Validation Error', 'Please fill in all required fields', 'error');
+        return;
+      }
+
+      // Generate random coordinates if not provided
+      if (!lat || !lng) {
+        const coords = utils.getRandomCoordinates();
+        lat = coords.lat;
+        lng = coords.lng;
+      }
+
+      const newIncident = {
+        title,
+        description,
+        status: 'reported',
+        user_id: state.userId,
+        latitude: parseFloat(lat),
+        longitude: parseFloat(lng),
+        city,
+        priority,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      try {
+        await DataManager.postData('/incidents', newIncident);
+        await DataManager.loadAllData();
+        
+        UI.hideModal();
+        UI.showToast('Success', 'Incident reported successfully', 'success');
+        
+        // Refresh current view
+        if (state.currentSection === 'incidents') {
+          this.populateIncidentFilters();
+          this.renderIncidentTable();
+        } else if (state.currentSection === 'dashboard') {
+          this.updateDashboardStats();
+          this.updateRecentActivity();
+        }
+        
+        // Update map
+        MapManager.updateMarkers();
+        
+      } catch (error) {
+        console.error('Error creating incident:', error);
+        UI.showToast('Error', 'Failed to create incident', 'error');
+      }
+    },
+
+    getCityOptions(selectedCity = '') {
+      const cities = ['Greater Noida', 'Noida', 'Ghaziabad', 'Delhi', 'Faridabad'];
+      return `
+        <option value="">Select City</option>
+        ${cities.map(city => `
+          <option value="${city}" ${selectedCity === city ? 'selected' : ''}>${city}</option>
+        `).join('')}
+      `;
+    },
+
+    getShelterFacilityOptions(selectedFacilities = []) {
+      const selected = new Set(selectedFacilities || []);
+      const facilities = [
+        { value: 'Medical Aid', label: 'Medical Aid' },
+        { value: 'Food', label: 'Food Service' },
+        { value: 'Water', label: 'Clean Water' },
+        { value: 'Bedding', label: 'Bedding' }
+      ];
+
+      return facilities.map(item => `
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
+          <input type="checkbox" value="${item.value}" style="margin: 0;" ${selected.has(item.value) ? 'checked' : ''}> ${item.label}
+        </label>
+      `).join('');
+    },
+
+    getReliefSupplyOptions(selectedSupplies = []) {
+      const selected = new Set(selectedSupplies || []);
+      const supplies = ['Water', 'Food', 'Medicine', 'Blankets', 'Clothing', 'Tools'];
+
+      return supplies.map(item => `
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 14px;">
+          <input type="checkbox" value="${item}" style="margin: 0;" ${selected.has(item) ? 'checked' : ''}> ${item}
+        </label>
+      `).join('');
+    },
+
+    createShelter(existingShelter = null) {
+      const isEdit = Boolean(existingShelter);
+      const modalContent = `
+        <form id="shelterForm" data-edit-id="${existingShelter?.id || ''}" style="display: flex; flex-direction: column; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label">Shelter Name *</label>
+            <input type="text" class="form-input" id="shelterName" required placeholder="e.g., Community Center - Sector 10" value="${utils.escapeHtml(existingShelter?.name || '')}">
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label class="form-label">City *</label>
+              <select class="form-select" id="shelterCity" required>
+                ${this.getCityOptions(existingShelter?.city || '')}
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Capacity *</label>
+              <input type="number" class="form-input" id="shelterCapacity" required min="1" placeholder="100" value="${existingShelter?.capacity ?? ''}">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Occupied</label>
+            <input type="number" class="form-input" id="shelterOccupied" min="0" placeholder="0" value="${existingShelter?.occupied ?? 0}">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Address *</label>
+            <input type="text" class="form-input" id="shelterAddress" required placeholder="Full address of the shelter" value="${utils.escapeHtml(existingShelter?.address || '')}">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Contact Number *</label>
+            <input type="tel" class="form-input" id="shelterContact" required placeholder="+91 XXXXXXXXXX" value="${utils.escapeHtml(existingShelter?.contact || '')}">
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label class="form-label">Latitude</label>
+              <input type="number" class="form-input" id="shelterLat" step="any" placeholder="28.6139" value="${existingShelter?.latitude ?? ''}">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Longitude</label>
+              <input type="number" class="form-input" id="shelterLng" step="any" placeholder="77.2090" value="${existingShelter?.longitude ?? ''}">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Available Facilities</label>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 8px;">
+              ${this.getShelterFacilityOptions(existingShelter?.facilities || [])}
+            </div>
+          </div>
+        </form>
+      `;
+
+      const modalFooter = `
+        <button type="button" class="btn" onclick="UI.hideModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" form="shelterForm">${isEdit ? 'Update Shelter' : 'Create Shelter'}</button>
+      `;
+
+      UI.showModal(isEdit ? `Edit Shelter #${existingShelter.id}` : 'Add New Shelter', modalContent, modalFooter);
+
+      document.getElementById('shelterForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await this.handleShelterSubmission();
+      });
+    },
+
+    async handleShelterSubmission() {
+      const form = document.getElementById('shelterForm');
+      const editId = form?.dataset.editId;
+      const name = document.getElementById('shelterName').value.trim();
+      const city = document.getElementById('shelterCity').value;
+      const capacity = parseInt(document.getElementById('shelterCapacity').value, 10);
+      const occupiedInput = document.getElementById('shelterOccupied').value;
+      const occupied = occupiedInput === '' ? 0 : parseInt(occupiedInput, 10);
+      const address = document.getElementById('shelterAddress').value.trim();
+      const contact = document.getElementById('shelterContact').value.trim();
+      let lat = document.getElementById('shelterLat').value;
+      let lng = document.getElementById('shelterLng').value;
+
+      if (!name || !city || Number.isNaN(capacity) || !address || !contact) {
+        UI.showToast('Validation Error', 'Please fill in all required fields', 'error');
+        return;
+      }
+
+      if (Number.isNaN(occupied) || occupied < 0) {
+        UI.showToast('Validation Error', 'Occupied count must be 0 or more', 'error');
+        return;
+      }
+
+      if (occupied > capacity) {
+        UI.showToast('Validation Error', 'Occupied count cannot be greater than capacity', 'error');
+        return;
+      }
+
+      if (!lat || !lng) {
+        if (editId) {
+          UI.showToast('Validation Error', 'Please provide both latitude and longitude', 'error');
+          return;
+        }
+
+        const coords = utils.getRandomCoordinates();
+        lat = coords.lat;
+        lng = coords.lng;
+      }
+
+      const facilities = Array.from(document.querySelectorAll('#shelterForm input[type="checkbox"]:checked'))
+        .map(cb => cb.value);
+
+      const newShelter = {
+        name,
+        city,
+        capacity,
+        occupied,
+        address,
+        contact,
+        latitude: parseFloat(lat),
+        longitude: parseFloat(lng),
+        facilities,
+        status: 'active'
+      };
+
+      try {
+        if (editId) {
+          await DataManager.updateData(`/shelters/${editId}`, newShelter);
+        } else {
+          await DataManager.postData('/shelters', newShelter);
+        }
+        await DataManager.loadAllData();
+
+        UI.hideModal();
+        UI.showToast('Success', editId ? 'Shelter updated successfully' : 'Shelter added successfully', 'success');
+        
+        if (state.currentSection === 'shelters') {
+          this.populateShelterFilters();
+          this.renderShelterTable();
+        } else if (state.currentSection === 'dashboard') {
+          this.updateDashboardStats();
+        }
+        
+        MapManager.updateMarkers();
+        
+      } catch (error) {
+        console.error('Error saving shelter:', error);
+        UI.showToast('Error', editId ? 'Failed to update shelter' : 'Failed to create shelter', 'error');
+      }
+    },
+
+    createRelief(existingRelief = null) {
+      const isEdit = Boolean(existingRelief);
+      const modalContent = `
+        <form id="reliefForm" data-edit-id="${existingRelief?.id || ''}" style="display: flex; flex-direction: column; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label">Center Name *</label>
+            <input type="text" class="form-input" id="reliefName" required placeholder="e.g., Medical Center - Block A" value="${utils.escapeHtml(existingRelief?.name || '')}">
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label class="form-label">Type *</label>
+              <select class="form-select" id="reliefType" required>
+                <option value="">Select Type</option>
+                <option value="Medical Center" ${existingRelief?.type === 'Medical Center' ? 'selected' : ''}>Medical Center</option>
+                <option value="Food Distribution" ${existingRelief?.type === 'Food Distribution' ? 'selected' : ''}>Food Distribution</option>
+                <option value="Supply Center" ${existingRelief?.type === 'Supply Center' ? 'selected' : ''}>Supply Center</option>
+                <option value="Aid Station" ${existingRelief?.type === 'Aid Station' ? 'selected' : ''}>Aid Station</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">City *</label>
+              <select class="form-select" id="reliefCity" required>
+                ${this.getCityOptions(existingRelief?.city || '')}
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Address *</label>
+            <input type="text" class="form-input" id="reliefAddress" required placeholder="Full address of the relief center" value="${utils.escapeHtml(existingRelief?.address || '')}">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Contact Number *</label>
+            <input type="tel" class="form-input" id="reliefContact" required placeholder="+91 XXXXXXXXXX" value="${utils.escapeHtml(existingRelief?.contact || '')}">
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label class="form-label">Latitude</label>
+              <input type="number" class="form-input" id="reliefLat" step="any" placeholder="28.6139" value="${existingRelief?.latitude ?? ''}">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Longitude</label>
+              <input type="number" class="form-input" id="reliefLng" step="any" placeholder="77.2090" value="${existingRelief?.longitude ?? ''}">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Available Supplies</label>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 8px;">
+              ${this.getReliefSupplyOptions(existingRelief?.supplies || [])}
+            </div>
+          </div>
+        </form>
+      `;
+
+      const modalFooter = `
+        <button type="button" class="btn" onclick="UI.hideModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" form="reliefForm">${isEdit ? 'Update Relief Center' : 'Create Relief Center'}</button>
+      `;
+
+      UI.showModal(isEdit ? `Edit Relief Center #${existingRelief.id}` : 'Add New Relief Center', modalContent, modalFooter);
+
+      document.getElementById('reliefForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await this.handleReliefSubmission();
+      });
+    },
+
+    async handleReliefSubmission() {
+      const form = document.getElementById('reliefForm');
+      const editId = form?.dataset.editId;
+      const name = document.getElementById('reliefName').value.trim();
+      const type = document.getElementById('reliefType').value;
+      const city = document.getElementById('reliefCity').value;
+      const address = document.getElementById('reliefAddress').value.trim();
+      const contact = document.getElementById('reliefContact').value.trim();
+      let lat = document.getElementById('reliefLat').value;
+      let lng = document.getElementById('reliefLng').value;
+
+      if (!name || !type || !city || !address || !contact) {
+        UI.showToast('Validation Error', 'Please fill in all required fields', 'error');
+        return;
+      }
+
+      if (!lat || !lng) {
+        if (editId) {
+          UI.showToast('Validation Error', 'Please provide both latitude and longitude', 'error');
+          return;
+        }
+
+        const coords = utils.getRandomCoordinates();
+        lat = coords.lat;
+        lng = coords.lng;
+      }
+
+      const supplies = Array.from(document.querySelectorAll('#reliefForm input[type="checkbox"]:checked'))
+        .map(cb => cb.value);
+
+      if (supplies.length === 0) {
+        UI.showToast('Validation Error', 'Please select at least one supply type', 'error');
+        return;
+      }
+
+      const newRelief = {
+        name,
+        title: name,
+        type,
+        city,
+        address,
+        contact,
+        latitude: parseFloat(lat),
+        longitude: parseFloat(lng),
+        supplies,
+        status: 'operational',
+        posted_by: state.userId
+      };
+
+      try {
+        if (editId) {
+          await DataManager.updateData(`/relief/${editId}`, newRelief);
+        } else {
+          await DataManager.postData('/relief', newRelief);
+        }
+        await DataManager.loadAllData();
+
+        UI.hideModal();
+        UI.showToast('Success', editId ? 'Relief center updated successfully' : 'Relief center added successfully', 'success');
+        
+        if (state.currentSection === 'relief') {
+          this.populateReliefFilters();
+          this.renderReliefTable();
+        } else if (state.currentSection === 'dashboard') {
+          this.updateDashboardStats();
+        }
+        
+        MapManager.updateMarkers();
+        
+      } catch (error) {
+        console.error('Error saving relief center:', error);
+        UI.showToast('Error', editId ? 'Failed to update relief center' : 'Failed to create relief center', 'error');
+      }
+    },
+
+    broadcastAlert() {
+      const modalContent = `
+        <form id="alertForm" style="display: flex; flex-direction: column; gap: 16px;">
+          <div class="form-group">
+            <label class="form-label">Alert Title *</label>
+            <input type="text" class="form-input" id="alertTitle" required placeholder="e.g., Emergency Evacuation Notice">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Message *</label>
+            <textarea class="form-textarea" id="alertMessage" required placeholder="Detailed alert message to broadcast to all users..."></textarea>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label class="form-label">Priority *</label>
+              <select class="form-select" id="alertPriority" required>
+                <option value="high">High Priority</option>
+                <option value="medium">Medium Priority</option>
+                <option value="low">Low Priority</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Target Area</label>
+              <select class="form-select" id="alertArea">
+                <option value="all">All Areas</option>
+                <option value="Greater Noida">Greater Noida</option>
+                <option value="Noida">Noida</option>
+                <option value="Ghaziabad">Ghaziabad</option>
+                <option value="Delhi">Delhi</option>
+                <option value="Faridabad">Faridabad</option>
+              </select>
+            </div>
+          </div>
+          
+          <div style="display: flex; gap: 8px; justify-content: center; padding: 12px; background: rgba(239, 68, 68, 0.1); border-radius: var(--radius-lg); border-left: 4px solid var(--danger);">
+            <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>
+            <span style="font-size: 13px; color: var(--text-muted);">This alert will be broadcast to all users in the selected area</span>
+          </div>
+        </form>
+      `;
+
+      const modalFooter = `
+        <button type="button" class="btn" onclick="UI.hideModal()">Cancel</button>
+        <button type="submit" class="btn btn-danger" form="alertForm">Broadcast Alert</button>
+      `;
+
+      UI.showModal('Broadcast Emergency Alert', modalContent, modalFooter);
+
+      document.getElementById('alertForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await this.handleAlertBroadcast();
+      });
+    },
+
+    async handleAlertBroadcast() {
+      const title = document.getElementById('alertTitle').value.trim();
+      const message = document.getElementById('alertMessage').value.trim();
+      const priority = document.getElementById('alertPriority').value;
+      const area = document.getElementById('alertArea').value;
+
+      if (!title || !message) {
+        UI.showToast('Validation Error', 'Please fill in all required fields', 'error');
+        return;
+      }
+
+      try {
+        // Simulate broadcast
+        UI.hideModal();
+        UI.showToast('Alert Broadcasted', `Emergency alert sent to ${area === 'all' ? 'all areas' : area}`, 'success');
+        
+        // In a real implementation, this would trigger push notifications, SMS, etc.
+        
+      } catch (error) {
+        console.error('Error broadcasting alert:', error);
+        UI.showToast('Error', 'Failed to broadcast alert', 'error');
+      }
+    }
+  };
+
+  // Action Handlers
+  const IncidentActions = {
+    async updateStatus(id, status) {
+      try {
+        const incident = state.incidents.find(i => i.id === id);
+        if (!incident) return;
+
+        const response = await DataManager.updateData(`/incidents/${id}`, { status });
+        const updatedIncident = response.incident || { ...incident, status, updated_at: new Date().toISOString() };
+        state.incidents = state.incidents.map(item => item.id === id ? updatedIncident : item);
+        
+        UI.showToast('Success', `Incident #${id} ${status}`, 'success');
+
+        if (state.currentSection === 'incidents') {
+          SectionRenderer.renderIncidentTable();
+        } else if (state.currentSection === 'dashboard') {
+          SectionRenderer.updateDashboardStats();
+          SectionRenderer.updateRecentActivity();
+        }
+
+        MapManager.updateMarkers();
+        
+      } catch (error) {
+        console.error('Error updating incident:', error);
+        UI.showToast('Error', 'Failed to update incident', 'error');
+      }
+    },
+
+    centerOnMap(id) {
+      const incident = state.incidents.find(i => i.id === id);
+      if (!incident) {
+        UI.showToast('Error', 'Incident not found', 'error');
+        return;
+      }
+
+      if (incident.latitude && incident.longitude) {
+        MapManager.centerOnLocation(incident.latitude, incident.longitude);
+        UI.showToast('Map', `Centered on incident #${id}`, 'info');
+      } else {
+        UI.showToast('Error', 'Location data not available', 'error');
+      }
+    },
+
+    showDetails(id) {
+      const incident = state.incidents.find(i => i.id === id);
+      if (!incident) return;
+
+      const modalContent = `
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--border);">
+            <h3 style="margin: 0;">Incident #${incident.id}</h3>
+            ${UI.createBadge(incident.status, incident.status).outerHTML}
+          </div>
+          
+          <div>
+            <h4 style="margin: 0 0 8px 0; color: var(--text-primary);">Title</h4>
+            <p style="margin: 0; padding: 12px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md);">${utils.escapeHtml(incident.title)}</p>
+          </div>
+          
+          <div>
+            <h4 style="margin: 0 0 8px 0; color: var(--text-primary);">Description</h4>
+            <p style="margin: 0; padding: 12px; background: rgba(255,255,255,0.02); border-radius: var(--radius-md);">${utils.escapeHtml(incident.description)}</p>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+              <h4 style="margin: 0 0 8px 0; color: var(--text-primary);">Location</h4>
+              <p style="margin: 0; font-size: 14px; color: var(--text-muted);">
+                <i class="fas fa-map-marker-alt"></i> ${incident.city}<br>
+                <i class="fas fa-crosshairs"></i> ${incident.latitude?.toFixed(6)}, ${incident.longitude?.toFixed(6)}
+              </p>
+            </div>
+            
+            <div>
+              <h4 style="margin: 0 0 8px 0; color: var(--text-primary);">Timeline</h4>
+              <p style="margin: 0; font-size: 14px; color: var(--text-muted);">
+                <i class="fas fa-clock"></i> Created: ${utils.formatDate(incident.created_at)}<br>
+                <i class="fas fa-edit"></i> Updated: ${utils.formatDate(incident.updated_at)}
+              </p>
+            </div>
+          </div>
+        </div>
+      `;
+
+      UI.showModal(`Incident Details #${incident.id}`, modalContent);
+    }
+  };
+
+  const SOSActions = {
+    async updateStatus(id, status) {
+      try {
+        const sos = state.sosAlerts.find(s => s.id === id);
+        if (!sos) return;
+
+        const response = await DataManager.updateData(`/sos/${id}`, { status });
+        const updatedSOS = response.sos || { ...sos, status, updated_at: new Date().toISOString() };
+        state.sosAlerts = state.sosAlerts.map(item => item.id === id ? updatedSOS : item);
+        
+        UI.showToast('Success', `SOS #${id} ${status}`, 'success');
+
+        if (state.currentSection === 'sos') {
+          SectionRenderer.renderSOSTable();
+        } else if (state.currentSection === 'dashboard') {
+          SectionRenderer.updateDashboardStats();
+          SectionRenderer.updateRecentActivity();
+        }
+
+        MapManager.updateMarkers();
+        
+      } catch (error) {
+        console.error('Error updating SOS:', error);
+        UI.showToast('Error', 'Failed to update SOS', 'error');
+      }
+    },
+
+    async markAllAcknowledged() {
+      const newAlerts = state.sosAlerts.filter(s => s.status === 'new');
+      if (newAlerts.length === 0) {
+        UI.showToast('Info', 'No new alerts to acknowledge', 'info');
+        return;
+      }
+
+      try {
+        await Promise.all(
+          newAlerts.map(sos => DataManager.updateData(`/sos/${sos.id}`, { status: 'acknowledged' }))
+        );
+        await DataManager.loadAllData();
+      
+        UI.showToast('Success', `${newAlerts.length} alerts acknowledged`, 'success');
+        SectionRenderer.renderSOSTable();
+        MapManager.updateMarkers();
+      } catch (error) {
+        console.error('Error acknowledging SOS alerts:', error);
+        UI.showToast('Error', 'Failed to acknowledge SOS alerts', 'error');
+      }
+    },
+
+    centerOnMap(id) {
+      const sos = state.sosAlerts.find(s => s.id === id);
+      if (!sos) {
+        UI.showToast('Error', 'SOS alert not found', 'error');
+        return;
+      }
+
+      if (sos.latitude && sos.longitude) {
+        MapManager.centerOnLocation(sos.latitude, sos.longitude);
+        UI.showToast('Map', `Centered on SOS #${id}`, 'info');
+      } else {
+        UI.showToast('Error', 'Location data not available', 'error');
+      }
+    },
+
+    callUser(phone) {
+      // In a real app, this might integrate with a calling system
+      UI.showToast('Call', `Initiating call to ${phone}`, 'info');
+      // window.open(`tel:${phone}`);
+    }
+  };
+
+  const ShelterActions = {
+    centerOnMap(id) {
+      const shelter = state.shelters.find(s => s.id === id);
+      if (!shelter) {
+        UI.showToast('Error', 'Shelter not found', 'error');
+        return;
+      }
+
+      if (shelter.latitude && shelter.longitude) {
+        MapManager.centerOnLocation(shelter.latitude, shelter.longitude);
+        UI.showToast('Map', `Centered on ${shelter.name}`, 'info');
+      } else {
+        UI.showToast('Error', 'Location data not available', 'error');
+      }
+    },
+
+    editShelter(id) {
+      const shelter = state.shelters.find(s => s.id === id);
+      if (!shelter) return;
+
+      SectionRenderer.createShelter(shelter);
+    },
+
+    callShelter(phone) {
+      UI.showToast('Call', `Initiating call to ${phone}`, 'info');
+    }
+  };
+
+  const ReliefActions = {
+    centerOnMap(id) {
+      const relief = state.relief.find(r => r.id === id);
+      if (!relief) {
+        UI.showToast('Error', 'Relief center not found', 'error');
+        return;
+      }
+
+      if (relief.latitude && relief.longitude) {
+        MapManager.centerOnLocation(relief.latitude, relief.longitude);
+        UI.showToast('Map', `Centered on ${relief.name}`, 'info');
+      } else {
+        UI.showToast('Error', 'Location data not available', 'error');
+      }
+    },
+
+    editRelief(id) {
+      const relief = state.relief.find(r => r.id === id);
+      if (!relief) return;
+
+      SectionRenderer.createRelief(relief);
+    },
+
+    manageSupplies(id) {
+      const relief = state.relief.find(r => r.id === id);
+      if (!relief) return;
+
+      UI.showToast('Supplies', `Supply management for ${relief.name}`, 'info');
+    },
+
+    callCenter(phone) {
+      UI.showToast('Call', `Initiating call to ${phone}`, 'info');
+    }
+  };
+
+  // Search Enhancement
+  const SearchManager = {
+    init() {
+      const searchInput = document.getElementById('globalSearch');
+      const searchResults = document.getElementById('searchResults');
+      
+      if (!searchInput || !searchResults) return;
+
+      searchInput.addEventListener('input', utils.debounce((e) => {
+        const query = e.target.value.trim().toLowerCase();
+        if (query.length >= 2) {
+          this.performSearch(query);
+        } else {
+          this.hideResults();
+        }
+      }, 300));
+
+      searchInput.addEventListener('focus', (e) => {
+        if (e.target.value.trim().length >= 2) {
+          this.performSearch(e.target.value.trim().toLowerCase());
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+          this.hideResults();
+        }
+      });
+    },
+
+    async performSearch(query) {
+      const results = {
+        incidents: state.incidents.filter(i => 
+          i.title?.toLowerCase().includes(query) ||
+          i.description?.toLowerCase().includes(query) ||
+          i.city?.toLowerCase().includes(query)
+        ).slice(0, 5),
+        
+        shelters: state.shelters.filter(s => 
+          s.name?.toLowerCase().includes(query) ||
+          s.address?.toLowerCase().includes(query) ||
+          s.city?.toLowerCase().includes(query)
+        ).slice(0, 3),
+        
+        relief: state.relief.filter(r => 
+          r.name?.toLowerCase().includes(query) ||
+          r.address?.toLowerCase().includes(query) ||
+          r.city?.toLowerCase().includes(query) ||
+          r.type?.toLowerCase().includes(query)
+        ).slice(0, 3),
+        
+        sos: state.sosAlerts.filter(s => 
+          s.message?.toLowerCase().includes(query) ||
+          s.city?.toLowerCase().includes(query)
+        ).slice(0, 3)
+      };
+
+      this.showResults(results, query);
+    },
+
+    showResults(results, query) {
+      const searchResults = document.getElementById('searchResults');
+      if (!searchResults) return;
+
+      const totalResults = results.incidents.length + results.shelters.length + 
+                          results.relief.length + results.sos.length;
+
+      if (totalResults === 0) {
+        searchResults.innerHTML = `
+          <div style="padding: 20px; text-align: center; color: var(--text-muted);">
+            <i class="fas fa-search" style="font-size: 24px; margin-bottom: 8px; opacity: 0.5;"></i>
+            <p>No results found for "${utils.escapeHtml(query)}"</p>
+          </div>
+        `;
+      } else {
+        let html = '';
+
+        if (results.incidents.length > 0) {
+          html += '<div style="padding: 12px 20px; background: rgba(245, 158, 11, 0.1); font-size: 12px; font-weight: 600; color: var(--warning); text-transform: uppercase; letter-spacing: 0.5px;">Incidents</div>';
+          results.incidents.forEach(incident => {
+            html += `
+              <div class="search-result-item" onclick="SearchManager.selectIncident(${incident.id})">
+                <div class="search-result-icon" style="background: var(--warning)22;">
+                  <i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i>
+                </div>
+                <div class="search-result-content">
+                  <h4>${utils.escapeHtml(incident.title)}</h4>
+                  <p>${incident.city} • ${UI.createBadge(incident.status, incident.status).outerHTML}</p>
+                </div>
+              </div>
+            `;
+          });
+        }
+
+        if (results.shelters.length > 0) {
+          html += '<div style="padding: 12px 20px; background: rgba(16, 185, 129, 0.1); font-size: 12px; font-weight: 600; color: var(--success); text-transform: uppercase; letter-spacing: 0.5px;">Shelters</div>';
+          results.shelters.forEach(shelter => {
+            html += `
+              <div class="search-result-item" onclick="SearchManager.selectShelter(${shelter.id})">
+                <div class="search-result-icon" style="background: var(--success)22;">
+                  <i class="fas fa-home" style="color: var(--success);"></i>
+                </div>
+                <div class="search-result-content">
+                  <h4>${utils.escapeHtml(shelter.name)}</h4>
+                  <p>${shelter.city} • ${shelter.occupied}/${shelter.capacity} occupied</p>
+                </div>
+              </div>
+            `;
+          });
+        }
+
+        if (results.relief.length > 0) {
+          html += '<div style="padding: 12px 20px; background: rgba(59, 130, 246, 0.1); font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px;">Relief Centers</div>';
+          results.relief.forEach(relief => {
+            html += `
+              <div class="search-result-item" onclick="SearchManager.selectRelief(${relief.id})">
+                <div class="search-result-icon" style="background: var(--primary)22;">
+                  <i class="fas fa-hands-helping" style="color: var(--primary);"></i>
+                </div>
+                <div class="search-result-content">
+                  <h4>${utils.escapeHtml(relief.name)}</h4>
+                  <p>${relief.city} • ${relief.type}</p>
+                </div>
+              </div>
+            `;
+          });
+        }
+
+        if (results.sos.length > 0) {
+          html += '<div style="padding: 12px 20px; background: rgba(239, 68, 68, 0.1); font-size: 12px; font-weight: 600; color: var(--danger); text-transform: uppercase; letter-spacing: 0.5px;">SOS Alerts</div>';
+          results.sos.forEach(sos => {
+            html += `
+              <div class="search-result-item" onclick="SearchManager.selectSOS(${sos.id})">
+                <div class="search-result-icon" style="background: var(--danger)22;">
+                  <i class="fas fa-phone-alt" style="color: var(--danger);"></i>
+                </div>
+                <div class="search-result-content">
+                  <h4>SOS Alert #${sos.id}</h4>
+                  <p>${sos.city} • ${sos.message.substring(0, 40)}...</p>
+                </div>
+              </div>
+            `;
+          });
+        }
+
+        searchResults.innerHTML = html;
+      }
+
+      searchResults.style.display = 'block';
+    },
+
+    hideResults() {
+      const searchResults = document.getElementById('searchResults');
+      if (searchResults) {
+        searchResults.style.display = 'none';
+      }
+    },
+
+    selectIncident(id) {
+      this.hideResults();
+      state.currentSection = 'incidents';
+      App.switchSection('incidents');
+      setTimeout(() => IncidentActions.centerOnMap(id), 500);
+    },
+
+    selectShelter(id) {
+      this.hideResults();
+      state.currentSection = 'shelters';
+      App.switchSection('shelters');
+      setTimeout(() => ShelterActions.centerOnMap(id), 500);
+    },
+
+    selectRelief(id) {
+      this.hideResults();
+      state.currentSection = 'relief';
+      App.switchSection('relief');
+      setTimeout(() => ReliefActions.centerOnMap(id), 500);
+    },
+
+    selectSOS(id) {
+      this.hideResults();
+      state.currentSection = 'sos';
+      App.switchSection('sos');
+      setTimeout(() => SOSActions.centerOnMap(id), 500);
+    }
+  };
+
+  // Main App Controller
+  const App = {
+    async init() {
+      try {
+        // Initialize components
+        this.bindEventListeners();
+        SearchManager.init();
+        
+        // Load initial data
+        await DataManager.loadAllData();
+        
+        // Render initial section
+        this.switchSection('dashboard');
+        
+        // Setup auto-refresh
+        setInterval(async () => {
+          await DataManager.loadAllData();
+          if (state.currentSection === 'dashboard') {
+            SectionRenderer.updateDashboardStats();
+            SectionRenderer.updateRecentActivity();
+          } else if (state.currentSection === 'incidents') {
+            SectionRenderer.populateIncidentFilters();
+            SectionRenderer.renderIncidentTable();
+          } else if (state.currentSection === 'shelters') {
+            SectionRenderer.populateShelterFilters();
+            SectionRenderer.renderShelterTable();
+          } else if (state.currentSection === 'relief') {
+            SectionRenderer.populateReliefFilters();
+            SectionRenderer.renderReliefTable();
+          } else if (state.currentSection === 'sos') {
+            SectionRenderer.renderSOSTable();
+          }
+          MapManager.updateMarkers();
+        }, CONFIG.REFRESH_INTERVAL);
+        
+        UI.showToast('System Ready', 'Dashboard initialized successfully', 'success');
+        
+      } catch (error) {
+        console.error('App initialization error:', error);
+        UI.showToast('Error', 'Failed to initialize dashboard', 'error');
+      }
+    },
+
+    bindEventListeners() {
+      // Sidebar navigation
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const section = item.dataset.section;
+          this.switchSection(section);
+        });
+      });
+
+      // Modal close handlers
+      document.getElementById('modalClose')?.addEventListener('click', UI.hideModal);
+      document.getElementById('modal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'modal') UI.hideModal();
+      });
+
+      // Quick action buttons
+      document.getElementById('quickAlertBtn')?.addEventListener('click', 
+        () => SectionRenderer.createIncident());
+      
+      document.getElementById('refreshBtn')?.addEventListener('click', async () => {
+        const btn = document.getElementById('refreshBtn');
+        const icon = btn.querySelector('i');
+        
+        // Add spinning animation
+        icon.style.animation = 'spin 1s linear infinite';
+        
+        try {
+          await DataManager.loadAllData();
+          
+          // Update current section
+          if (state.currentSection === 'dashboard') {
+            SectionRenderer.updateDashboardStats();
+            SectionRenderer.updateRecentActivity();
+          } else {
+            this.switchSection(state.currentSection);
+          }
+          
+          MapManager.updateMarkers();
+          UI.showToast('Success', 'Data refreshed', 'success');
+          
+        } catch (error) {
+          console.error('Refresh error:', error);
+          UI.showToast('Error', 'Failed to refresh data', 'error');
+        } finally {
+          // Remove spinning animation
+          icon.style.animation = '';
+        }
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey || e.metaKey) {
+          switch (e.key) {
+            case '1':
+              e.preventDefault();
+              this.switchSection('dashboard');
+              break;
+            case '2':
+              e.preventDefault();
+              this.switchSection('incidents');
+              break;
+            case '3':
+              e.preventDefault();
+              this.switchSection('sos');
+              break;
+            case '4':
+              e.preventDefault();
+              this.switchSection('shelters');
+              break;
+            case '5':
+              e.preventDefault();
+              this.switchSection('relief');
+              break;
+            case 'k':
+              e.preventDefault();
+              document.getElementById('globalSearch')?.focus();
+              break;
+          }
+        }
+        
+        if (e.key === 'Escape') {
+          UI.hideModal();
+          SearchManager.hideResults();
+        }
+      });
+    },
+
+    switchSection(sectionName) {
+      // Update navigation state
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.section === sectionName) {
+          item.classList.add('active');
+        }
+      });
+
+      // Update current section
+      state.currentSection = sectionName;
+
+      // Clear search
+      const searchInput = document.getElementById('globalSearch');
+      if (searchInput) searchInput.value = '';
+      SearchManager.hideResults();
+
+      // Render section content
+      switch (sectionName) {
+        case 'dashboard':
+          SectionRenderer.renderDashboard();
+          break;
+        case 'incidents':
+          SectionRenderer.renderIncidents();
+          break;
+        case 'sos':
+          SectionRenderer.renderSOS();
+          break;
+        case 'shelters':
+          SectionRenderer.renderShelters();
+          break;
+        case 'relief':
+          SectionRenderer.renderRelief();
+          break;
+        default:
+          SectionRenderer.renderDashboard();
+      }
+    }
+  };
+
+  // Expose global functions for onclick handlers
+  window.SectionRenderer = SectionRenderer;
+  window.IncidentActions = IncidentActions;
+  window.SOSActions = SOSActions;
+  window.ShelterActions = ShelterActions;
+  window.ReliefActions = ReliefActions;
+  window.SearchManager = SearchManager;
+  window.UI = UI;
+
+  // Initialize app when DOM is loaded
+  document.addEventListener('DOMContentLoaded', () => {
+    App.init();
+  });
+
+  // Add custom CSS for map markers and animations
+  const style = document.createElement('style');
+  style.textContent = `
+    .custom-div-icon {
+      background: none !important;
+      border: none !important;
+      font-size: 20px !important;
+    }
+    
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: var(--bg-secondary);
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-strong);
+      border-radius: 4px;
+      transition: background 0.3s ease;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+    
+    /* Loading animation enhancement */
+    @keyframes loading-shimmer {
+      0% {
+        background-position: -200px 0;
+      }
+      100% {
+        background-position: calc(200px + 100%) 0;
+      }
+    }
+    
+    .loading-shimmer {
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      background-size: 200px 100%;
+      animation: loading-shimmer 1.5s infinite;
+    }
+    
+    /* Enhanced focus states */
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px var(--primary-glow);
+    }
+    
+    /* Improved button hover effects */
+    .btn:active {
+      transform: translateY(-1px) scale(0.98);
+    }
+    
+    .btn-primary:active {
+      transform: translateY(-2px) scale(0.98);
+    }
+    
+    /* Enhanced table row hover */
+    .table tbody tr:hover {
+      background: rgba(255, 255, 255, 0.03);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Notification animation improvements */
+    .toast {
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+    }
+    
+    /* Enhanced modal backdrop blur */
+    .modal {
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    
+    /* Custom checkbox styles */
+    input[type="checkbox"] {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--border-strong);
+      border-radius: 4px;
+      background: var(--bg-card);
+      cursor: pointer;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    
+    input[type="checkbox"]:checked {
+      background: var(--primary);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+    
+    input[type="checkbox"]:checked::after {
+      content: '✓';
+      position: absolute;
+      top: -2px;
+      left: 2px;
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    
+    /* Enhanced search result animations */
+    .search-result-item {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .search-result-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateX(4px);
+    }
+    
+    /* Premium loading states */
+    .table tbody tr.loading {
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+      background-size: 200px 100%;
+      animation: loading-shimmer 1.5s infinite;
+    }
+    
+    /* Enhanced badge animations */
+    .badge {
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .badge::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.6s ease;
+    }
+    
+    .badge:hover::before {
+      left: 100%;
+    }
+    
+    /* Responsive enhancements */
+    @media (max-width: 768px) {
+      .action-buttons {
+        flex-direction: column;
+        gap: 4px;
+      }
+      
+      .btn-sm {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      
+      .filters {
+        flex-direction: column;
+        gap: 8px;
+      }
+      
+      .filter-item {
+        width: 100%;
+      }
+    }
+    
+    /* High contrast mode support */
+    @media (prefers-contrast: high) {
+      :root {
+        --border: rgba(255, 255, 255, 0.3);
+        --border-strong: rgba(255, 255, 255, 0.5);
+        --text-muted: #cbd5e1;
+      }
+    }
+    
+    /* Reduced motion support */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+    
+    /* Dark mode enhancements */
+    @media (prefers-color-scheme: dark) {
+      .leaflet-popup-content-wrapper {
+        background: var(--bg-card);
+        color: var(--text-primary);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border);
+      }
+      
+      .leaflet-popup-tip {
+        background: var(--bg-card);
+      }
+    }
+  `;
+  document.head.appendChild(style);
+
+  </script>
+</body>
+</html>

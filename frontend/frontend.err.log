@@ -1,0 +1,15 @@
+::ffff:127.0.0.1 - - [13/Apr/2026 17:54:37] "GET /user_dashboard.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [13/Apr/2026 17:56:26] "GET /index.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [13/Apr/2026 17:56:26] code 404, message File not found
+::ffff:127.0.0.1 - - [13/Apr/2026 17:56:26] "GET /styles.css HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [13/Apr/2026 17:56:37] "GET /login.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [13/Apr/2026 17:56:37] "GET /css/style.css HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [13/Apr/2026 17:56:37] "GET /js/access-control.js HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [13/Apr/2026 17:56:37] "GET /js/auth.js HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [13/Apr/2026 17:56:52] code 404, message File not found
+::ffff:127.0.0.1 - - [13/Apr/2026 17:56:52] "GET /favicon.ico HTTP/1.1" 404 -
+::ffff:127.0.0.1 - - [13/Apr/2026 17:57:33] "GET /user_dashboard.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [13/Apr/2026 17:57:33] "GET /js/user.js HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [13/Apr/2026 17:58:13] "GET /admin_dashboard.html HTTP/1.1" 200 -
+::ffff:127.0.0.1 - - [13/Apr/2026 18:46:45] code 404, message File not found
+::ffff:127.0.0.1 - - [13/Apr/2026 18:46:45] "GET /styles.css HTTP/1.1" 404 -
