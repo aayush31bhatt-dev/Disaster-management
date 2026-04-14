@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Dashboard - Disaster Management</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    /* Dashboard Layout */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f5f5;
+    }
+
+    /* Header Styles */
+    .dashboard-header {
+      background: linear-gradient(135deg, #007bff, #0056b3);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
+
+    .dashboard-header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      position: relative;
+    }
+
+    .username {
+      cursor: pointer;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    .username:hover {
+      background-color: rgba(255,255,255,0.1);
+    }
+
+    /* Logout Popup */
+    .logout-popup {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: white;
+      color: #333;
+      border-radius: 5px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      padding: 0.5rem;
+      min-width: 120px;
+      z-index: 1001;
+    }
+
+    .logout-popup.show {
+      display: block;
+    }
+
+    .logout-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 3px;
+      cursor: pointer;
+      width: 100%;
+      font-size: 0.9rem;
+    }
+
+    .logout-btn:hover {
+      background: #c82333;
+    }
+
+    /* Main Container */
+    .dashboard-container {
+      display: flex;
+      margin-top: 70px;
+      min-height: calc(100vh - 70px);
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+      width: 250px;
+      background: white;
+      box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+      padding: 2rem 0;
+    }
+
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .sidebar li {
+      border-bottom: 1px solid #eee;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 1rem 2rem;
+      color: #333;
+      text-decoration: none;
+      transition: background-color 0.3s;
+    }
+
+    .sidebar a:hover {
+      background-color: #f8f9fa;
+    }
+
+    .sidebar a.active {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .sidebar i {
+      margin-right: 10px;
+      width: 20px;
+    }
+
+    /* Content Area */
+    .content-area {
+      flex: 1;
+      padding: 2rem;
+    }
+
+    .content-section {
+      display: none;
+      background: white;
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .content-section.active {
+      display: block;
+    }
+
+    /* Statistics Dashboard */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      text-align: center;
+      border-left: 4px solid #007bff;
+    }
+
+    .stat-card h3 {
+      margin: 0 0 0.5rem 0;
+      color: #666;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .stat-card .stat-number {
+      font-size: 2.5rem;
+      font-weight: bold;
+      color: #007bff;
+      margin: 0;
+    }
+
+    .stat-card.incidents {
+      border-left-color: #dc3545;
+    }
+
+    .stat-card.incidents .stat-number {
+      color: #dc3545;
+    }
+
+    .stat-card.sos {
+      border-left-color: #ffc107;
+    }
+
+    .stat-card.sos .stat-number {
+      color: #ffc107;
+    }
+
+    /* Form Styles */
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: #007bff;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+    }
+
+    .btn-primary {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s;
+    }
+
+    .btn-primary:hover {
+      background: #0056b3;
+    }
+
+    /* Map Styles */
+    #map {
+      height: 500px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 200px;
+      }
+      
+      .dashboard-header h1 {
+        font-size: 1.4rem;
+      }
+      
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .dashboard-container {
+        flex-direction: column;
+      }
+      
+      .sidebar {
+        width: 100%;
+        order: 2;
+      }
+      
+      .content-area {
+        order: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="dashboard-header">
+    <h1><i class="fas fa-shield-alt"></i> ANHONI - User Dashboard</h1>
+    <div class="user-info">
+      <span class="username" id="usernameDisplay" onclick="toggleLogoutPopup()">
+        <i class="fas fa-user"></i> <span id="userNameText">Loading...</span>
+      </span>
+      <div class="logout-popup" id="logoutPopup">
+        <button class="logout-btn" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Dashboard Container -->
+  <div class="dashboard-container">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <ul>
+        <li>
+          <a href="#dashboard" class="nav-link active" onclick="showSection('dashboard')">
+            <i class="fas fa-tachometer-alt"></i> Dashboard
+          </a>
+        </li>
+        <li>
+          <a href="#report-incident" class="nav-link" onclick="showSection('report-incident')">
+            <i class="fas fa-exclamation-triangle"></i> Report an Incident
+          </a>
+        </li>
+        <li>
+          <a href="#sos-request" class="nav-link" onclick="showSection('sos-request')">
+            <i class="fas fa-phone"></i> SOS Request
+          </a>
+        </li>
+        <li>
+          <a href="#disaster-map" class="nav-link" onclick="showSection('disaster-map')">
+            <i class="fas fa-map-marked-alt"></i> Disaster Map
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Content Area -->
+    <main class="content-area">
+      <!-- Dashboard Statistics Section -->
+      <section id="dashboard" class="content-section active">
+        <h2><i class="fas fa-chart-bar"></i> Your Statistics</h2>
+        <div class="stats-grid">
+          <div class="stat-card incidents">
+            <h3>Incidents Reported</h3>
+            <p class="stat-number" id="incidentCount">0</p>
+          </div>
+          <div class="stat-card sos">
+            <h3>SOS Requests</h3>
+            <p class="stat-number" id="sosCount">0</p>
+          </div>
+          <div class="stat-card">
+            <h3>Total Contributions</h3>
+            <p class="stat-number" id="totalCount">0</p>
+          </div>
+        </div>
+        
+        <div style="background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <h3><i class="fas fa-info-circle"></i> Welcome to ANHONI</h3>
+          <p>Use the sidebar navigation to:</p>
+          <ul>
+            <li><strong>Report an Incident:</strong> Submit disaster-related incidents with location data</li>
+            <li><strong>SOS Request:</strong> Send emergency requests for immediate assistance</li>
+            <li><strong>Disaster Map:</strong> View real-time disaster information on an interactive map</li>
+          </ul>
+          <p>Your contributions help emergency responders coordinate effective disaster management efforts.</p>
+        </div>
+      </section>
+
+      <!-- Report Incident Section -->
+      <section id="report-incident" class="content-section">
+        <h2><i class="fas fa-exclamation-triangle"></i> Report an Incident</h2>
+        <form id="incidentForm">
+          <div class="form-group">
+            <label for="incidentTitle">Incident Title *</label>
+            <input type="text" id="incidentTitle" required placeholder="Brief description of the incident">
+          </div>
+          
+          <div class="form-group">
+            <label for="incidentDesc">Detailed Description *</label>
+            <textarea id="incidentDesc" required rows="4" placeholder="Provide detailed information about the incident"></textarea>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label for="incidentLat">Latitude *</label>
+              <input type="number" step="any" id="incidentLat" required placeholder="e.g., 28.6139">
+            </div>
+            
+            <div class="form-group">
+              <label for="incidentLon">Longitude *</label>
+              <input type="number" step="any" id="incidentLon" required placeholder="e.g., 77.2090">
+            </div>
+          </div>
+          
+          <button type="submit" class="btn-primary">
+            <i class="fas fa-paper-plane"></i> Report Incident
+          </button>
+        </form>
+      </section>
+
+      <!-- SOS Request Section -->
+      <section id="sos-request" class="content-section">
+        <h2><i class="fas fa-phone"></i> SOS Emergency Request</h2>
+        <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; padding: 1rem; margin-bottom: 1.5rem;">
+          <p><strong><i class="fas fa-exclamation-triangle" style="color: #856404;"></i> Emergency Use Only:</strong> This feature is for immediate emergency assistance. Please provide accurate location information.</p>
+        </div>
+        
+        <form id="sosForm">
+          <div class="form-group">
+            <label for="sosMessage">Emergency Message *</label>
+            <textarea id="sosMessage" required rows="4" placeholder="Describe your emergency situation and immediate needs"></textarea>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label for="sosLat">Latitude *</label>
+              <input type="number" step="any" id="sosLat" required placeholder="e.g., 28.6139">
+            </div>
+            
+            <div class="form-group">
+              <label for="sosLon">Longitude *</label>
+              <input type="number" step="any" id="sosLon" required placeholder="e.g., 77.2090">
+            </div>
+          </div>
+          
+          <button type="submit" class="btn-primary" style="background: #dc3545; border-color: #dc3545;">
+            <i class="fas fa-exclamation-circle"></i> Send Emergency SOS
+          </button>
+        </form>
+      </section>
+
+      <!-- Disaster Map Section -->
+      <section id="disaster-map" class="content-section">
+        <h2><i class="fas fa-map-marked-alt"></i> Interactive Disaster Map</h2>
+        <div style="margin-bottom: 1rem;">
+          <p>View real-time disaster information, incidents, shelters, and relief centers on the map below.</p>
+        </div>
+        <div id="map"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="js/access-control.js"></script>
+  <script src="js/user.js"></script>
+</body>
+</html>
